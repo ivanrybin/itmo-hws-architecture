@@ -12,6 +12,8 @@
 
 #include "command.hpp"
 
+namespace fs = std::experimental::filesystem;
+
 class cat_cmd : public command {
 public:
     ~cat_cmd() override = default;

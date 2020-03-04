@@ -5,7 +5,7 @@
  * Точка входа в terminal.
  *
  */
-#include "src/terminal.hpp"
+#include "terminal.hpp"
 
 int process(int argc, char **argv) {
     terminal bash{};

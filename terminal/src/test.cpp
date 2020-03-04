@@ -5,7 +5,7 @@
  * Набор тестов для проверки функциональности terminal.
  *
  */
-#include "src/terminal.hpp"
+#include "terminal.hpp"
 
 #include <cassert>
 #include <string>

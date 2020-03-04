@@ -16,11 +16,11 @@
 #include <memory>
 #include <utility>
 
-#include "src/commands/echo_cmd.hpp"
-#include "src/commands/cat_cmd.hpp"
-#include "src/commands/pwd_cmd.hpp"
-#include "src/commands/exit_cmd.hpp"
-#include "src/commands/wc_cmd.hpp"
+#include "commands/echo_cmd.hpp"
+#include "commands/cat_cmd.hpp"
+#include "commands/pwd_cmd.hpp"
+#include "commands/exit_cmd.hpp"
+#include "commands/wc_cmd.hpp"
 
 class commands {
 public:
