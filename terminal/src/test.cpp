@@ -12,11 +12,11 @@
 #include <sstream>
 
 // UNCOMMENT TO ENABLE TESTS
-//#define ECHO_CMD
-//#define CAT_CMD
-//#define PWD_CMD
-//#define WC_CMD
-//#define PIPE
+#define ECHO_CMD
+#define CAT_CMD
+#define PWD_CMD
+#define WC_CMD
+#define PIPE
 
 namespace fs = std::experimental::filesystem;
 

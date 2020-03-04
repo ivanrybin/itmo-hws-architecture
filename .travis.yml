@@ -1,0 +1,13 @@
+
+language: cpp
+
+dist: bionic
+
+compiler: gcc
+
+os:
+  -linux
+
+script: 
+  - g++ terminal/src/test.cpp -lstdc++fs -o terminal_test
+  - ./terminal_test
