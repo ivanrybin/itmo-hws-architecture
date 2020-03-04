@@ -2,7 +2,7 @@
 
 Реализация shell-подобной оболочки.
 
-Структура наследования и зависимостей ![](https://github.com/ivanrybin/itmo-hws-architecture/blob/cli/terminal_class_diagram.png)
+Структура наследования и зависимостей ![](https://github.com/ivanrybin/itmo-hws-architecture/blob/cli/terminal_class_diagram.svg)
 
 # Детали реализации
 
