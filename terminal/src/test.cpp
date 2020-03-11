@@ -10,12 +10,14 @@
 #include <cassert>
 #include <string>
 #include <sstream>
+#include <cstdio>
 
 // UNCOMMENT TO ENABLE TESTS
 #define ECHO_CMD
 #define CAT_CMD
 #define PWD_CMD
 #define WC_CMD
+#define GREP_CMD
 #define PIPE
 
 namespace fs = std::experimental::filesystem;
@@ -112,15 +114,14 @@ static void cat_cmd_test() {
         assert("test cat\nmultiple string\nwith 3 lines\n" == sout.str());
         clear_streams(sin, sout, serr);
 
-        sin << "cat "
-               "cat_test.txt "
-               "cat_test.txt "
-               "cat_test.txt" << "\n";
+        sin << "cat cat_test.txt cat_test.txt cat_test.txt" << "\n";
         test_t.run();
         assert("test cat\nmultiple string\nwith 3 lines\n"
                "test cat\nmultiple string\nwith 3 lines\n"
                "test cat\nmultiple string\nwith 3 lines\n" == sout.str());
         clear_streams(sin, sout, serr);
+
+        std::remove("cat_test.txt");
     }
     // errors
     {
@@ -129,8 +130,8 @@ static void cat_cmd_test() {
         test_t.run();
         assert("cat: abracadabra.hs: Нет такого файла или каталога\n" == serr.str());
         clear_streams(sin, sout, serr);
-
     }
+
 #endif
 }
 
@@ -179,6 +180,8 @@ static void wc_cmd_test() {
         assert(w_cnt == 0);
         assert(f_size == 0);
         clear_streams(sin, sout, serr);
+
+        std::remove("wc_test.txt");
     }
 
     // basics - not empty file
@@ -198,6 +201,8 @@ static void wc_cmd_test() {
 
         assert(" 2\t2\t28 wc_test.txt\n" == sout.str());
         clear_streams(sin, sout, serr);
+
+        std::remove("wc_test.txt");
     }
 
     // basics - many files
@@ -215,12 +220,93 @@ static void wc_cmd_test() {
         gl(sout, l); assert(" 2\t2\t28 wc_test.txt" == l);
         gl(sout, l); assert(" 6\t6\t84 итого" == l);
         clear_streams(sin, sout, serr);
+
+        std::remove("wc_test.txt");
     }
     // errors
     {
         sin << "wc abc.xyz" << "\n";
         test_t.run();
         assert("wc: abc.xyz: Нет такого файла или каталога\n" == serr.str());
+    }
+#endif
+}
+
+static void grep_cmd_test() {
+#ifdef GREP_CMD
+    std::string l;
+    std::stringstream sin{};
+    std::stringstream sout{};
+    std::stringstream serr{};
+    terminal test_t(sin, sout, serr, true);
+
+    // basics [-w] [-A n] [-i]
+    {
+        std::ofstream file("grep_test.txt", std::ofstream::out | std::ofstream::trunc);
+        file << "grep\n"
+                "Line №2 GREPTEST\n"
+                "Line №3 abcdefgh\n"
+                "Line №4 ABC word\n"
+                "end of file\n";
+        file.close();
+
+        sin << "grep grep grep_test.txt" << "\n";       // just pattern
+        test_t.run();
+
+        gl(sout, l); assert("grep" == l);
+        clear_streams(sin, sout, serr);
+
+
+        sin << "grep -i grep grep_test.txt" << "\n";    // [-i] non case sensitive
+        test_t.run();
+
+        assert("grep\n"
+               "Line №2 GREPTEST\n" == sout.str());
+        clear_streams(sin, sout, serr);
+
+
+        sin << "grep -wi abc grep_test.txt" << "\n";    // [-w] only words
+        test_t.run();
+
+        assert("Line №4 ABC word\n" == sout.str());
+        clear_streams(sin, sout, serr);
+
+
+        sin << "grep -wA2 grep grep_test.txt" << "\n";  // [-A n] n lines after matching
+        test_t.run();
+
+        assert("grep\n"
+               "Line №2 GREPTEST\n"
+               "Line №3 abcdefgh\n" == sout.str());
+        clear_streams(sin, sout, serr);
+
+
+        sin << "grep -w grep grep_test.txt grep_test.txt grep_test.txt" << "\n"; // many files
+        test_t.run();
+
+        assert("grep_test.txt:grep\n"
+               "grep_test.txt:grep\n"
+               "grep_test.txt:grep\n" == sout.str());
+        clear_streams(sin, sout, serr);
+
+        std::remove("grep_test.txt");
+    }
+    // errors
+    {
+        sin << "grep pattern abc.xyz" << "\n";
+        test_t.run();
+        assert("grep: abc.xyz: Нет такого файла или каталога\n" == serr.str());
+        clear_streams(sin, sout, serr);
+
+        sin << "grep -A pattern abc.xyz" << "\n";
+        test_t.run();
+        assert("grep: pattern: Неверный аргумент длины контекста\n" == serr.str());
+        clear_streams(sin, sout, serr);
+
+        sin << "grep -x pattern abc.xyz" << "\n";
+        test_t.run();
+        assert("grep: -x: Неверный ключ\n" == serr.str());
+        clear_streams(sin, sout, serr);
     }
 #endif
 }
@@ -238,12 +324,13 @@ static void pipe_test() {
         sin << "echo 1 2 3 | wc"         << "\n";
         sin << "echo 1 | echo 2"         << "\n";
         sin << "echo 1 | echo 2 | pwd "  << "\n";
-
+        sin << "echo ABCDEFG | grep -iA10 abc | wc "  << "\n";
         test_t.run();
 
         gl(sout, l); assert(" 1\t3\t6" == l);
         gl(sout, l); assert("2" == l);
         gl(sout, l); assert(fs::current_path() == l);
+        gl(sout, l); assert(" 1\t1\t8" == l);
     }
 
 #endif
@@ -254,6 +341,7 @@ int main() {
     cat_cmd_test();
     pwd_cmd_test();
     wc_cmd_test();
+    grep_cmd_test();
     pipe_test();
     return 0;
 }

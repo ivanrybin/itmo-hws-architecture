@@ -97,12 +97,20 @@ int grep_cmd::execute(std::stringstream& out_buf,
             if (!is_pipe) {
                 error_message(err, "grep", parse_info.second, "Неверный ключ");
             }
+
+            for (;pos < args.size() and args[pos] != "|"; ++pos) {}
+            --pos;
+
             break;
         }
         case BAD_CONTEXT_LENGTH: {
             if (!is_pipe) {
                 error_message(err, "grep", parse_info.second, "Неверный аргумент длины контекста");
             }
+
+            for (;pos < args.size() and args[pos] != "|"; ++pos) {}
+            --pos;
+
             break;
         }
         default: {
