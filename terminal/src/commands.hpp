@@ -22,6 +22,8 @@
 #include "commands/exit_cmd.hpp"
 #include "commands/wc_cmd.hpp"
 #include "commands/grep_cmd.hpp"
+#include "commands/ls_cmd.hpp"
+#include "commands/cd_cmd.hpp"
 
 class commands {
 public:
@@ -36,4 +38,6 @@ commands::commands() {
     storage.insert(std::make_pair("cat",  std::make_unique<command*>(new cat_cmd)));
     storage.insert(std::make_pair("wc",   std::make_unique<command*>(new wc_cmd)));
     storage.insert(std::make_pair("grep", std::make_unique<command*>(new grep_cmd)));
+    storage.insert(std::make_pair("ls",   std::make_unique<command*>(new wc_cmd)));
+    storage.insert(std::make_pair("cd", std::make_unique<command*>(new grep_cmd)));
 }

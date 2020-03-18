@@ -19,6 +19,8 @@
 #define WC_CMD
 #define GREP_CMD
 #define PIPE
+#define LS_CMD
+#define CD_CMD
 
 namespace fs = std::experimental::filesystem;
 
@@ -310,6 +312,144 @@ static void grep_cmd_test() {
     }
 #endif
 }
+
+
+static void ls_cmd_test() {
+#ifdef LS_CMD
+    std::string l;
+    std::stringstream sin{};
+    std::stringstream sout{};
+    std::stringstream serr{};
+    terminal test_t(sin, sout, serr, true);
+    {
+
+        sin << "ls" << "\n";       
+        test_t.run();
+
+        for (auto & p : fs::directory_iterator(fs::current_path())) {
+            std::string result = "";
+            result += "\"";
+            result += p.path().filename();
+            result += "\"";
+            gl(sout, l);
+            assert(result == l);
+        }
+        clear_streams(sin, sout, serr);
+
+        sin << "ls  " + std::string(fs::current_path()) << "\n";       
+        test_t.run();
+
+        for (auto & p : fs::directory_iterator(fs::current_path())) {
+            std::string result = "";
+            result += "\"";
+            result += p.path().filename();
+            result += "\"";
+            gl(sout, l);
+            assert(result == l);
+        }
+        clear_streams(sin, sout, serr);
+
+ 
+        sin << "ls  "  + std::string(fs::current_path().root_path()) << "\n";       
+        test_t.run();
+
+        for (auto & p : fs::directory_iterator(fs::current_path().root_path())) {
+            std::string result = "";
+            result += "\"";
+            result += p.path().filename();
+            result += "\"";
+            gl(sout, l);
+            assert(result == l);
+        }
+        clear_streams(sin, sout, serr);
+
+    }
+    // errors
+    {
+       sin << "ls tghbgtv htbg tg" << "\n";       
+       test_t.run();
+       gl(sout, l);
+       assert("error count of args for command ls" == l);
+       clear_streams(sin, sout, serr);
+
+
+       sin << "ls tghbgtv    bhunj" << "\n";       
+       test_t.run();
+       gl(sout, l);
+       assert("error count of args for command ls" == l);
+       clear_streams(sin, sout, serr);
+
+       sin << "ls tghbbhunjrftgyhuj" << "\n";       
+       test_t.run();
+       gl(sout, l);
+       assert("error args for command ls" == l);
+       clear_streams(sin, sout, serr);
+    }
+#endif
+}
+
+
+static void cd_cmd_test() {
+#ifdef CD_CMD
+    std::string l;
+    std::stringstream sin{};
+    std::stringstream sout{};
+    std::stringstream serr{};
+    terminal test_t(sin, sout, serr, true);
+    {
+
+        sin << "cd" << "\n";       
+        test_t.run();
+
+        gl(sout, l); 
+        assert("new current directory: " + std::string(fs::current_path().root_directory()) == l);
+        clear_streams(sin, sout, serr);
+
+        sin << "   cd   " << "\n";       
+        test_t.run();
+
+        gl(sout, l); 
+        assert("new current directory: " + std::string(fs::current_path().root_directory()) == l);
+        clear_streams(sin, sout, serr);
+
+        sin << " cd  . " << "\n";       
+        test_t.run();
+
+        gl(sout, l); 
+        assert("new current directory: " + std::string(fs::current_path()) == l);
+        clear_streams(sin, sout, serr);
+
+        
+
+
+    }
+    // errors
+    {
+        sin << "cd uik ubhnijmk lpkomji" << "\n";       
+        test_t.run();
+
+        gl(sout, l); 
+        assert("error count of args for command cd" == l);
+        clear_streams(sin, sout, serr);
+
+        sin << "cd .. .. " << "\n";       
+        test_t.run();
+
+        gl(sout, l); 
+        assert("error count of args for command cd" == l);
+        clear_streams(sin, sout, serr);
+
+
+        sin << "cd cfvgybuhuikmkofcelkmojni " << "\n";       
+        test_t.run();
+
+        gl(sout, l); 
+        assert("error args for command cd" == l);
+        clear_streams(sin, sout, serr);
+    }
+#endif
+}
+
 
 static void pipe_test() {
 #ifdef PIPE
