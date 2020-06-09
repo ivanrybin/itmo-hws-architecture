@@ -7,7 +7,6 @@ class Player(Entity):
         super().__init__(*args, **kwargs)
         self.mv_types = {'LEFT': (-1, 0), 'RIGHT': (1, 0),
                          'UP': (0, -1), 'DOWN': (0, 1)}
-        self.char = 203
 
     def move(self, move, game_map):
         dx, dy = self.mv_types[move]

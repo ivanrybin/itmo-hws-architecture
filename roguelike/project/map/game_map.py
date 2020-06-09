@@ -9,13 +9,13 @@ class Map:
     def __init__(self, width, height, player_start_x, player_start_y, dungeon=False):
         self.wd = width
         self.ht = height
-        self.dungeon = dungeon
-        self.cells = self.__init_cells()
         self.px = player_start_x
         self.py = player_start_y
+        self.dungeon = dungeon
+        self.walls = []
         self.start_room = Room(self.px - 5, self.py - 5, 10, 10)
         self.rooms = [self.start_room]
-        self.walls = []
+        self.cells = self.__init_cells()
 
     def __init_cells(self):
         cells = [[Cell(self.dungeon) for y in range(self.ht)] for x in range(self.wd)]
@@ -46,6 +46,7 @@ class Map:
                     if room.is_intersects(new_room):
                         intersects = True
                         break
+
             if not intersects:
                 self.rooms.append(new_room)
                 cnt -= 1
@@ -53,7 +54,7 @@ class Map:
         for room in self.rooms:
             self.create_room(room)
 
-    def create_walls(self, cnt=rnd.randint(5, 10)):
+    def create_walls(self, cnt=rnd.randint(5, 10), with_intersection=False):
         if self.dungeon:
             return
 
@@ -62,10 +63,11 @@ class Map:
             w, h = rnd.randint(1, self.wd * 0.7), rnd.randint(1, self.ht * 0.7)
             new_wall = Wall(x, y, w, h)
             intersects = False
-            for wall in self.walls:
-                if wall.is_intersects(new_wall) or wall.is_intersects(self.start_room):
-                    intersects = True
-                    break
+            if not with_intersection:
+                for wall in self.walls:
+                    if wall.is_intersects(new_wall) or wall.is_intersects(self.start_room):
+                        intersects = True
+                        break
 
             if not intersects:
                 self.walls.append(new_wall)
