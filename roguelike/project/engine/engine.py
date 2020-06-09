@@ -85,7 +85,7 @@ class Engine:
         for x in range(self.map.wd):
             for y in range(self.map.ht):
                 tc.map_set_properties(fov_map, x, y,
-                                      not self.map.cells[x][y].id_discovered,
+                                      not self.map.cells[x][y].is_discovered,
                                       not self.map.cells[x][y].is_blocked)
         return fov_map
 
@@ -119,7 +119,6 @@ class Engine:
                         self.player.move("RIGHT", self.map)
 
     def run(self):
-        fov_recompute = True
         # подгрузка шрифта
         tc.console_set_custom_font(self.FONT_PATH, tc.FONT_TYPE_GREYSCALE | tc.FONT_LAYOUT_TCOD)
         # инициализация главной консоли

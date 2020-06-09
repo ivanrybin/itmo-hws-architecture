@@ -1,16 +1,16 @@
 class Cell:
-    def __init__(self, is_blocked, id_discovered=None):
+    def __init__(self, is_blocked, is_discovered=None):
         self.is_blocked = is_blocked
 
-        if id_discovered is None:
-            id_discovered = is_blocked
+        if is_discovered is None:
+            is_discovered = is_blocked
 
-        self.id_discovered = id_discovered
+        self.is_discovered = is_discovered
 
     def block(self):
         self.is_blocked = True
-        self.id_discovered = False
+        self.is_discovered = False
 
     def unblock(self):
         self.is_blocked = False
-        self.id_discovered = True
+        self.is_discovered = True

@@ -5,7 +5,7 @@ def draw_entity(con, game_map, entity, fov_mode, fov_map):
     """
     Рисует сущности, попадающие в радиус FOV.
     """
-    if fov_mode:
+    if fov_mode and not game_map.cells[entity.x][entity.y].is_discovered:
         # проверка видимости сущности
         if tc.map_is_in_fov(fov_map, entity.x, entity.y):
             # обновление позиции сущности, если она бот
@@ -38,13 +38,13 @@ def render_all(con, game_map, entities, screen_width, screen_height, colors, fov
             is_visible = True
             if fov_mode:
                 is_visible = tc.map_is_in_fov(fov_map, x, y)
-            if is_visible or game_map.cells[x][y].id_discovered:
+            if is_visible or game_map.cells[x][y].is_discovered:
                 if game_map.is_cell_blocked(x, y):
                     tc.console_set_char_background(con, x, y, colors.get('main_wall'), tc.BKGND_SET)
                 else:
                     tc.console_set_char_background(con, x, y, colors.get('main_ground'), tc.BKGND_SET)
-                game_map.cells[x][y].id_discovered = True
-            elif not game_map.cells[x][y].id_discovered:
+                game_map.cells[x][y].is_discovered = True
+            elif not game_map.cells[x][y].is_discovered:
                 if game_map.is_cell_blocked(x, y):
                     tc.console_set_char_background(con, x, y, colors.get('fov_dark_walls'), tc.BKGND_SET)
                 else:
