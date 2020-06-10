@@ -1,57 +1,65 @@
+import tcod as tc
 import time
 import random as rnd
 
+from logic.entity import who_blockes
+from logic.states import State
+
+
 class Strategy:
     @staticmethod
-    def act(mob, game_map):
-        """
-        Стандартное поведение, случайное движение по карте.
-        В конфликт не вступает.
-        """
-        if 'mv_wait' not in mob.__dict__:
-            mob.mv_wait = rnd.randint(1, 3)
-        if 'mv_time' not in mob.__dict__:
-            mob.mv_time = time.time()
-
-        if time.time() - mob.mv_time < mob.mv_wait:
-            return
-
-        mob.mv_time = time.time()
-
-        dx = rnd.randint(-1, 1)
-        dy = 0
-        if dx == 0:
-            dy = rnd.randint(-1, 1)
-
-        if game_map.is_cell_blocked(mob.x + dx, mob.y + dy):
-            return
-
-        if 0 <= mob.x + dx < mob.sw:
-            mob.x += dx
-        elif mob.x + dx >= mob.sw:
-            mob.x = mob.sw - 1
-        elif mob.x + dx < 0:
-            mob.x = 0
-
-        if 0 <= mob.y + dy < mob.sh:
-            mob.y += dy
-        elif mob.y + dy >= mob.sh:
-            mob.y = mob.sh - 1
-        elif mob.y + dy < 0:
-            mob.y = 0
+    def act(self, target, fov_map, game_map, mobs):
+        return []
 
 
 class PassiveStrategy(Strategy):
     pass
 
 
-class AgressiveStrategy(Strategy):
+class AggressiveStrategy(Strategy):
     @staticmethod
-    def act(mob, game_map):
-        print("hi")
+    def act(self, target, fov_map, game_map, mobs):
+        info = []
+
+        if tc.map_is_in_fov(fov_map, self.x, self.y):
+
+            if 2 <= self.get_dist(target) <= 10:
+                self.move_astar(target, game_map, mobs)
+            elif self.get_dist(target) < 2 and target.stats.hp > 0:
+                res = self.stats.attack_target(target)
+                info.extend(res)
+
+        return info
 
 
 class CowardStrategy(Strategy):
     @staticmethod
-    def act(mob, game_map):
-        print("hi")
+    def act(self, target, fov_map, game_map, mobs):
+        info = []
+        if tc.map_is_in_fov(fov_map, self.x, self.y):
+
+            dist = self.get_dist(target)
+            if 2 <= dist <= 5:
+                if self.x - target.x < 0:
+                    if self.y - target.y < 0:
+                        self.update_pos(-1, -1, game_map)
+                    elif self.y - target.y == 0:
+                        self.update_pos(-1, 0, game_map)
+                    else:
+                        self.update_pos(-1, 1, game_map)
+                elif self.x - target.x == 0:
+                    if self.y - target.y < 0:
+                        self.update_pos(0, -1, game_map)
+                    elif self.y - target.y == 0:
+                        self.update_pos(-1, 1, game_map)
+                    else:
+                        self.update_pos(0, 1, game_map)
+                else:
+                    if self.y - target.y < 0:
+                        self.update_pos(1, -1, game_map)
+                    elif self.y - target.y == 0:
+                        self.update_pos(1, 1, game_map)
+                    else:
+                        self.update_pos(1, 1, game_map)
+
+        return info

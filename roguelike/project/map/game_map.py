@@ -2,6 +2,8 @@ from map.cell import Cell
 from map.room import Room
 from map.wall import Wall
 
+from logic.states import State
+
 import random as rnd
 
 
@@ -16,6 +18,7 @@ class Map:
         self.start_room = Room(self.px - 5, self.py - 5, 10, 10)
         self.rooms = [self.start_room]
         self.cells = self.__init_cells()
+        self.state = State.PLAYER_TURN
 
     def __init_cells(self):
         cells = [[Cell(self.dungeon) for y in range(self.ht)] for x in range(self.wd)]

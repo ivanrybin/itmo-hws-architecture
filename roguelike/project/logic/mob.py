@@ -24,6 +24,3 @@ class Mob(Entity):
 
                 if not_in_wall_respawn:
                     break
-
-    def update_pos(self, game_map):
-        self.strategy.act(self, game_map)
