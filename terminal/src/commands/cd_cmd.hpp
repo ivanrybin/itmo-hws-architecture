@@ -71,6 +71,7 @@ int cd_cmd::execute(std::stringstream& out_buf,
             newDir = args[pos];
         }
     }
+    for (pos = pos + 1; pos < args.size() and args[pos] != "|"; ++pos) {}
 
     int rc = chdir(newDir.c_str());
     if (rc < 0) {

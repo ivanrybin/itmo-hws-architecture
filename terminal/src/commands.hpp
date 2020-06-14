@@ -38,6 +38,6 @@ commands::commands() {
     storage.insert(std::make_pair("cat",  std::make_unique<command*>(new cat_cmd)));
     storage.insert(std::make_pair("wc",   std::make_unique<command*>(new wc_cmd)));
     storage.insert(std::make_pair("grep", std::make_unique<command*>(new grep_cmd)));
-    storage.insert(std::make_pair("ls",   std::make_unique<command*>(new wc_cmd)));
-    storage.insert(std::make_pair("cd", std::make_unique<command*>(new grep_cmd)));
+    storage.insert(std::make_pair("ls",   std::make_unique<command*>(new ls_cmd)));
+    storage.insert(std::make_pair("cd", std::make_unique<command*>(new cd_cmd)));
 }

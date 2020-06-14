@@ -483,5 +483,8 @@ int main() {
     wc_cmd_test();
     grep_cmd_test();
     pipe_test();
+    ls_cmd_test();
+    cd_cmd_test();
+    
     return 0;
 }
