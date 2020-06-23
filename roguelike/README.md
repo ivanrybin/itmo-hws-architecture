@@ -25,3 +25,9 @@
     Зеленый (Cow)  - пассивен, стоит на месте, не атакует при нападении
     Голубой (Aaaa) - трус, убегает от игрока
     
+Интерфейс игры:
+
+    Белый персонаж - игрок
+    Остальные      - мобы
+
+![](https://github.com/ivanrybin/itmo-hws-architecture/blob/roguelike/roguelike/GAME_SH.png)
