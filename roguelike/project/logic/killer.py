@@ -1,6 +1,9 @@
 import tcod as tc
 
 from logic.states import State
+from logic.logger import Message
+from logic.entity import EntityType
+
 from engine.render import RenderOrder
 
 
@@ -8,7 +11,7 @@ def kill_player(player):
     player.char = 'X'
     player.color = tc.darker_fuchsia
 
-    return "You're DEAD. GAME OVER", State.PLAYER_DEAD
+    return Message("You're DEAD. GAME OVER", tc.dark_red), State.PLAYER_DEAD
 
 
 def kill_mob(mob):
@@ -22,4 +25,13 @@ def kill_mob(mob):
     mob.name = 'died ' + mob.name
     mob.render_order = RenderOrder.DEAD_ENTITY
 
-    return [f'{name} is dead!']
+    if mob.type == EntityType.HEALTH_PTN:
+        mob.char = ord(' ')
+        return Message('', tc.fuchsia), State.HEALTH_UP
+
+    if name == EntityType.INTOX_PTN:
+        mob.char = ord(' ')
+        return Message('', tc.fuchsia), State.INTOXICATE
+
+
+    return Message(f'{name} is dead!', tc.yellow), State.PLAYER_TURN

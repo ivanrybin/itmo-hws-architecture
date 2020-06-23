@@ -33,22 +33,22 @@ def clear_all(cons, entities):
         clear_entity(cons, entity)
 
 
-# def render_bar(cons, bar, x, y, width, name, value, max_value):
-#     curr_width = int(float(value) / max_value * width)
-#
-#     tc.console_set_default_background(cons, bar.back_color)
-#     tc.console_rect(cons, x, y, width, 1, False, tc.BKGND_SCREEN)
-#     tc.console_set_default_background(cons, bar.back_color)
-#     if curr_width > 0:
-#         tc.console_rect(cons, x, y, bar.wd, 1, False, tc.BKGND_SCREEN)
-#
-#     tc.console_set_default_foreground(cons, tc.white)
-#     tc.console_print_ex(cons, int(x + width / 2), y, tc.BKGND_NONE,
-#                         tc.CENTER, f'{bar.name}: {value}/{max_value}')
+def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_color):
+    bar_width = int(float(value) / maximum * total_width)
+
+    tc.console_set_default_background(panel, back_color)
+    tc.console_rect(panel, x, y, total_width, 1, False, tc.BKGND_SCREEN)
+
+    tc.console_set_default_background(panel, bar_color)
+    if bar_width > 0:
+        tc.console_rect(panel, x, y, bar_width, 1, False, tc.BKGND_SCREEN)
+
+    tc.console_set_default_foreground(panel, tc.white)
+    tc.console_print_ex(panel, int(x + total_width / 2), y, tc.BKGND_NONE, tc.CENTER, '{0}: {1}/{2}'.format(name, value, maximum))
 
 
 def render_all(cons, bars_cons, bars, player, game_map, entities, screen_width, screen_height, colors, fov_mode,
-               fov_map):
+               fov_map, msg_log):
     """
     Рисует карту и все объекты на ней, фиксиру  я текущий FOV.
     """
@@ -74,13 +74,26 @@ def render_all(cons, bars_cons, bars, player, game_map, entities, screen_width, 
 
     cons.blit(cons, 0, 0, screen_width, screen_height, 0, 0, 0)
 
-    tc.console_set_default_foreground(cons, tc.white)
-    tc.console_print_ex(cons, 1, 1, tc.BKGND_NONE, tc.LEFT, 'HP: {0:02}/{1:02}'.format(player.stats.hp, player.stats.max_hp))
+    # normal HP
+    # tc.console_set_default_foreground(cons, tc.white)
+    # tc.console_print_ex(cons, 1, 1, tc.BKGND_NONE, tc.LEFT, 'HP: {0:02}/{1:02}'.format(player.stats.hp, player.stats.max_hp))
 
-    # tc.console_set_default_background(bars_cons, tc.black)
-    # tc.console_clear(bars_cons)
-    #
-    # for bar in bars:
-    #     render_bar(bars_cons, bar, 1, 1, bar.wd, bar.name, player.stats.hp, player.stats.max_hp)
-    #
-    # tc.console_blit(bars_cons, 0, 0, screen_width, 7, 0, 0, screen_height - 7)
+
+    # bars
+    tc.console_set_default_background(bars_cons, tc.black)
+    tc.console_clear(bars_cons)
+
+    # print msgs
+    y = 1
+    for msg in msg_log.msgs:
+        tc.console_set_default_foreground(bars_cons, msg.color)
+        tc.console_print_ex(bars_cons, msg_log.x, y, tc.BKGND_NONE, tc.LEFT, msg.txt)
+        y += 1
+
+    # рендер панели здоровья
+    # cons, x, y, width, name, curr_stat, total_stat, forground, background
+    render_bar(bars_cons, 0, 0, 26, 'HP', player.stats.hp, player.stats.max_hp,
+               tc.light_red, tc.darker_red)
+
+    # bars_cons, x, y, ширина панели, высота панели, консоль, смещение по x, смещение по y
+    tc.console_blit(bars_cons, 0, 0, 26, 4, cons, 0, 0)

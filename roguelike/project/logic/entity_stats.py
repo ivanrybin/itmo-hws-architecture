@@ -1,5 +1,8 @@
 import time
-import random as rnd
+import tcod as tc
+
+from logic.logger import Message
+from logic.entity import EntityType
 
 
 class EntityStats:
@@ -11,6 +14,12 @@ class EntityStats:
         self.owner = owner
         self.mv_time = time.time()
         self.mv_wait = 0.2
+        self.intox_start_time = None
+
+    def increase_hp(self, delta):
+        self.hp += delta
+        if self.hp >= self.max_hp:
+            self.hp = self.max_hp
 
     def decrease_hp(self, delta):
         info = []
@@ -30,7 +39,8 @@ class EntityStats:
         damage = self.force - target.stats.defense
 
         if damage > 0:
-            info.append({'message': f'{self.owner.name} атаковал {target.name} на {damage} урона.'})
-            info.extend(target.stats.decrease_hp(damage))
-
+            if target.type not in [EntityType.HEALTH_PTN, EntityType.INTOX_PTN]:
+                info.append({'message': Message(f'{self.owner.name} damaged {target.name} in {damage} hps.',
+                                                tc.white)})
+                info.extend(target.stats.decrease_hp(damage))
         return info

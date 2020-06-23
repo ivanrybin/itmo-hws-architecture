@@ -2,21 +2,32 @@ import tcod as tc
 import numpy as np
 import math
 import time
+from enum import Enum
 
 from engine.render import RenderOrder
+from logic.inventory import *
 
 
 def who_blockes(self, mobs, dest_x, dest_y):
     for mob in mobs:
-        if mob != self and mob.x == dest_x and mob.y == dest_y and mob.stats:
+        if mob != self and mob.x == dest_x and mob.y == dest_y and mob.stats and mob.is_blocking:
             return mob
     return None
+
+
+class EntityType(Enum):
+    PLAYER = 1
+    MOB = 2
+    ITEM = 3
+    HEALTH_PTN = 4
+    INTOX_PTN = 5
 
 
 class Entity:
     def __init__(self, x, y, screen_width, screen_height, char, color, name,
                  stats=None, game_map=None, strategy=None,
-                 is_blocking=True, render_order=RenderOrder.ALIVE_ENTITY):
+                 is_blocking=True, render_order=RenderOrder.ALIVE_ENTITY,
+                 item=None, inventory=None, entity_type=None):
         self.x = x
         self.y = y
         self.sw = screen_width
@@ -32,6 +43,14 @@ class Entity:
         self.strategy = strategy
         self.is_blocking = is_blocking
         self.render_order = render_order
+        self.item = item
+        self.inventory = inventory
+        self.type = entity_type
+
+        if self.item:
+            self.item.owner = self
+        if self.inventory:
+            self.inventory.owner = self
 
     def update_pos(self, dx, dy, game_map):
         if game_map.is_cell_blocked(self.x + dx, self.y + dy):
