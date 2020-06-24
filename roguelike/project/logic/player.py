@@ -1,7 +1,7 @@
-import tcod as tc
 from logic.entity import *
+from logic.logger import Message
 from logic.states import State
-from logic.decorator import intoxicating_deco
+from logic.patterns.decorator import intoxicating_deco
 
 
 class Player(Entity):
@@ -10,7 +10,7 @@ class Player(Entity):
         self.mv_types = {'LEFT': (-1, 0), 'RIGHT': (1, 0),
                          'UP': (0, -1), 'DOWN': (0, 1)}
 
-    def apply_item(self, item):
+    def pick_item(self, item):
         info = []
 
         if item.type == EntityType.HEALTH_PTN:
@@ -28,14 +28,13 @@ class Player(Entity):
             self.inventory.del_item(item)
             intoxicating_deco(self)
 
-
         return info
 
     def get_item(self, game_map, entities):
         info = []
         for entity in entities:
             if entity.x == self.x and entity.y == self.y and \
-                    entity.type in [EntityType.HEALTH_PTN, EntityType.INTOX_PTN]:
+                    entity.type in [EntityType.HEALTH_PTN, EntityType.INTOX_PTN, EntityType.ARMOUR]:
                 info = self.inventory.add_item(entity)
                 break
 

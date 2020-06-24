@@ -11,10 +11,12 @@ class EntityStats:
         self.max_hp = hp
         self.force = force
         self.defense = defense
+        self.max_defense = defense
         self.owner = owner
         self.mv_time = time.time()
         self.mv_wait = 0.2
         self.intox_start_time = None
+        self.armour = None
 
     def increase_hp(self, delta):
         self.hp += delta
@@ -23,6 +25,25 @@ class EntityStats:
 
     def decrease_hp(self, delta):
         info = []
+        if self.armour and self.armour.item.defense > 0:
+            self.armour.item.defense -= delta
+            if self.armour.item.defense <= 0:
+                delta = (-1) * self.armour.item.defense
+                self.owner.color = self.owner.main_color
+                self.max_defense -= self.armour.item.max_defense
+
+                info.append({'message': Message('Armour destroyed.', self.armour.item.color)})
+                self.armour = None
+            else:
+                delta = 0
+
+        if self.defense > 0:
+            self.defense -= delta
+            if self.defense < 0:
+                delta = (-1) * self.defense
+                self.defense = 0
+            else:
+                delta = 0
 
         self.hp -= delta
 
@@ -36,7 +57,7 @@ class EntityStats:
         if not target.stats:
             return info
 
-        damage = self.force - target.stats.defense
+        damage = self.force
 
         if damage > 0:
             if target.type not in [EntityType.HEALTH_PTN, EntityType.INTOX_PTN]:

@@ -8,7 +8,7 @@ from engine.render import RenderOrder
 
 
 def kill_player(player):
-    player.char = 'X'
+    player.char = ord('X')
     player.color = tc.darker_fuchsia
 
     return Message("You're DEAD. GAME OVER", tc.dark_red), State.PLAYER_DEAD
@@ -33,5 +33,7 @@ def kill_mob(mob):
         mob.char = ord(' ')
         return Message('', tc.fuchsia), State.INTOXICATE
 
+    if name == 'Aggr':
+        return True, Message(f'{name} is dead!', tc.yellow), State.PLAYER_TURN
 
-    return Message(f'{name} is dead!', tc.yellow), State.PLAYER_TURN
+    return False, Message(f'{name} is dead!', tc.yellow), State.PLAYER_TURN

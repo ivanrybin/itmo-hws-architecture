@@ -5,8 +5,6 @@ import time
 from enum import Enum
 
 from engine.render import RenderOrder
-from logic.inventory import *
-
 
 def who_blockes(self, mobs, dest_x, dest_y):
     for mob in mobs:
@@ -21,6 +19,7 @@ class EntityType(Enum):
     ITEM = 3
     HEALTH_PTN = 4
     INTOX_PTN = 5
+    ARMOUR = 6
 
 
 class Entity:
@@ -46,6 +45,7 @@ class Entity:
         self.item = item
         self.inventory = inventory
         self.type = entity_type
+        self.main_color = color
 
         if self.item:
             self.item.owner = self

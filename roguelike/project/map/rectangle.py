@@ -12,5 +12,5 @@ class Rectangle:
                 other.y1 <= self.y2 <= other.y2)
 
     def is_point_in(self, x, y):
-        return self.x1 <= x < self.x2 and self.y1 <= y <= self.y2
+        return self.x1 <= x <= self.x2 and self.y1 <= y <= self.y2
 

@@ -9,7 +9,8 @@ import tcod as tc
 def intoxicating_deco(player):
     # deco func
     def new_move(self, move_type, game_map, mobs):
-        # декорированная функция проверяет не вышло ли время интоксикации
+        # проверяет не вышло ли время интоксикации
+        # если вышло возвращает исходную функцию движения на место
         start_t = self.stats.intox_start_time
         if start_t and time() - start_t >= 7:
             self.move = self.__old_move

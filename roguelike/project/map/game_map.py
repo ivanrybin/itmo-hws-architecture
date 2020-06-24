@@ -8,7 +8,7 @@ import random as rnd
 
 
 class Map:
-    def __init__(self, width, height, player_start_x, player_start_y, dungeon=False):
+    def __init__(self, width, height, player_start_x, player_start_y, dungeon=False, load_type='NORMAL'):
         self.wd = width
         self.ht = height
         self.px = player_start_x
@@ -17,6 +17,8 @@ class Map:
         self.walls = []
         self.start_room = Room(self.px - 5, self.py - 5, 10, 10)
         self.rooms = [self.start_room]
+        if load_type == 'LOAD':
+            return
         self.cells = self.__init_cells()
         self.state = State.PLAYER_TURN
 
@@ -62,7 +64,7 @@ class Map:
             return
 
         while cnt > 0:
-            x, y = rnd.randint(1, self.wd), rnd.randint(1, self.ht)
+            x, y = rnd.randint(self.wd * 0.05, self.wd), rnd.randint(self.ht * 0.15, self.ht)
             w, h = rnd.randint(1, self.wd * 0.7), rnd.randint(1, self.ht * 0.7)
             new_wall = Wall(x, y, w, h)
             intersects = False
