@@ -11,5 +11,5 @@ add_executable(terminal src/main.cpp)
 target_link_libraries(terminal stdc++fs)
 
 # test mode
-#add_executable(test src/test.cpp)
-#target_link_libraries(test stdc++fs)
+add_executable(test src/test.cpp)
+target_link_libraries(test stdc++fs)
