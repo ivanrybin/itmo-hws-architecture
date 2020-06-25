@@ -81,7 +81,7 @@ HW 11:
 - [X] поддержка сохранения и загрузки состояния игры 
 - [X] паттерн "Команда" - взаимодействие с пользователем
 
-- [X] диздок
+- [X] ![диздок](https://github.com/ivanrybin/itmo-hws-architecture/blob/roguelike/roguelike/%D0%B4%D0%B8%D0%B7%D0%B4%D0%BE%D0%BA/DOC.md)
 
 
 ### Заимствования
