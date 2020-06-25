@@ -10,14 +10,13 @@ os:
 
 script: 
   - g++ terminal/src/test.cpp
-    src/terminal.cpp
-    src/cli/commands.cpp
-    src/cli/commands/command.cpp
-    src/cli/commands/wc_cmd.cpp
-    src/cli/commands/cat_cmd.cpp
-    src/cli/commands/exit_cmd.cpp
-    src/cli/commands/pwd_cmd.cpp
-    src/cli/commands/echo_cmd.cpp
-    -lstdc++fs -o
-    terminal_test
+    terminal/src/terminal.cpp
+    terminal/src/cli/commands.cpp
+    terminal/src/cli/commands/command.cpp
+    terminal/src/cli/commands/wc_cmd.cpp
+    terminal/src/cli/commands/cat_cmd.cpp
+    terminal/src/cli/commands/exit_cmd.cpp
+    terminal/src/cli/commands/pwd_cmd.cpp
+    terminal/src/cli/commands/echo_cmd.cpp
+    -lstdc++fs -o terminal_test
   - ./terminal_test
