@@ -112,17 +112,28 @@ std::pair<int, std::string> grep_cmd::parse_args(size_t& pos,
 
         po::variables_map vm;
 
+        bool is_exc   = false;
+        std::pair<int, std::string> exc_info;
+
         try {
             po::store(po::command_line_parser(args_to_parse).options(desc).run(), vm);
             po::notify(vm);
-        } catch (boost::wrapexcept<boost::program_options::invalid_option_value>& e1) {
-            return std::make_pair(BAD_CONTEXT_LENGTH, "bad_context");
 
-        } catch (boost::wrapexcept<boost::program_options::unknown_option>& e2) {
-            return std::make_pair(BAD_KEY, e2.get_option_name());
+        } catch (boost::program_options::invalid_option_value& e1) {
+            is_exc = true;
+            exc_info = std::make_pair(BAD_CONTEXT_LENGTH, "bad_context");
 
-        } catch (std::exception& e3) {
-            return std::make_pair(BAD_KEY, "bad key");
+        } catch (boost::program_options::unknown_option& e2) {
+            is_exc = true;
+            exc_info = std::make_pair(BAD_KEY, e2.get_option_name());
+
+        } catch (...) {
+            is_exc = true;
+            exc_info = std::make_pair(BAD_KEY, "bad key");
+        }
+
+        if (is_exc) {
+            return exc_info;
         }
 
 
