@@ -1,4 +1,6 @@
-### Домашнее задание #8, 10, 11. Rogulike.
+### Домашнее задание #8, 10, 11. Roguelike.
+
+![](https://github.com/ivanrybin/itmo-hws-architecture/blob/roguelike/roguelike/game_screenshot.png)
 
 Запуск через файл: `main.py`
 
@@ -56,8 +58,6 @@
     При выходе до смерти    - Esc - карта сохраняется и при загрузке в консоли надо выбрать, подгружать ли новую или старую игру
     При убийстве 3 Aggr     - переход на новый уровень, обновление карты, повышение характеристик игрока и мобов
     
-![](https://github.com/ivanrybin/itmo-hws-architecture/blob/roguelike/roguelike/game_screenshot.png)
-
 
 #### Требования:
 
