@@ -17,11 +17,11 @@
 #include <utility>
 #include <unordered_map>
 
-#include "src/cli/commands/echo_cmd.hpp"
-#include "src/cli/commands/cat_cmd.hpp"
-#include "src/cli/commands/pwd_cmd.hpp"
-#include "src/cli/commands/exit_cmd.hpp"
-#include "src/cli/commands/wc_cmd.hpp"
+#include "commands/echo_cmd.hpp"
+#include "commands/cat_cmd.hpp"
+#include "commands/pwd_cmd.hpp"
+#include "commands/exit_cmd.hpp"
+#include "commands/wc_cmd.hpp"
 
 class commands {
 public:

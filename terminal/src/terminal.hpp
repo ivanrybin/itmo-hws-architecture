@@ -26,7 +26,7 @@
 #include <fstream>
 #include <algorithm>
 
-#include "src/cli/commands.hpp"
+#include "cli/commands.hpp"
 
 class terminal {
 public:
