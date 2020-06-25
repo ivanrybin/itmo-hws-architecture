@@ -12,6 +12,10 @@
 
 #include "command.hpp"
 
+/*
+ * echo_cmd - реализация абстрактного класса command,
+ *            обеспечивающая функциональность команды echo.
+ */
 class echo_cmd : public command {
 public:
     ~echo_cmd() override = default;

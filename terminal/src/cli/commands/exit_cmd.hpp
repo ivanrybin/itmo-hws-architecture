@@ -12,6 +12,10 @@
 
 #include "command.hpp"
 
+/*
+ * exit_cmd - реализация абстрактного класса command,
+ *           обеспечивающая функциональность команды exit.
+ */
 class exit_cmd : public command {
 public:
     ~exit_cmd() override = default;

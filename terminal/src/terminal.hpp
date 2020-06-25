@@ -28,6 +28,10 @@
 
 #include "cli/commands.hpp"
 
+/*
+ * terminal - класс, реализующий CLI
+ *            и обеспечивающий его работу через поддерживаемые в commands команды.
+ */
 class terminal {
 public:
     explicit terminal   (std::istream& in = std::cin, std::ostream& out = std::cout,

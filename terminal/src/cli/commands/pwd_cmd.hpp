@@ -14,6 +14,10 @@
 
 namespace fs = std::experimental::filesystem;
 
+/*
+ * pwd_cmd - реализация абстрактного класса command,
+ *           обеспечивающая функциональность команды pwd.
+ */
 class pwd_cmd : public command {
 public:
     ~pwd_cmd() override = default;

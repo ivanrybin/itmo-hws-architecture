@@ -14,6 +14,11 @@
 
 namespace fs = std::experimental::filesystem;
 
+
+/*
+ * cat_cmd - реализация абстрактного класса command,
+ *           обеспечивающая функциональность команды cat.
+ */
 class cat_cmd : public command {
 public:
     ~cat_cmd() override = default;

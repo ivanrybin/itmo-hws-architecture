@@ -23,6 +23,9 @@
 #include "commands/exit_cmd.hpp"
 #include "commands/wc_cmd.hpp"
 
+/*
+ * commands - класс агрегатор команд, поддерживаемых CLI.
+ */
 class commands {
 public:
     commands();

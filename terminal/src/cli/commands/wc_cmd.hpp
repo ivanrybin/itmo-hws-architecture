@@ -14,6 +14,11 @@
 
 namespace fs = std::experimental::filesystem;
 
+
+/*
+ * wc_cmd - реализация абстрактного класса command,
+ *          обеспечивающая функциональность команды wc.
+ */
 class wc_cmd : public command {
 public:
     ~wc_cmd() override = default;
