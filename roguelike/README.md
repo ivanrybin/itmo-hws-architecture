@@ -2,6 +2,9 @@
 
 ![](https://github.com/ivanrybin/itmo-hws-architecture/blob/roguelike/roguelike/game_screenshot.png)
 
+![Диздок по ссылке](https://github.com/ivanrybin/itmo-hws-architecture/blob/roguelike/roguelike/%D0%B4%D0%B8%D0%B7%D0%B4%D0%BE%D0%BA/DOC.md)
+
+### Описание
 Запуск через файл: `main.py`
 
 Нужен пакет: `tcod`
