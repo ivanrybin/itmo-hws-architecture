@@ -79,10 +79,12 @@ int grep_cmd::execute(std::stringstream& out_buf,
 }
 
 /*
- * Метод grep_cmd::parse_args отвечает за разбор строки на токены.
+ * Метод grep_cmd::parse_args отвечает за разбор строки на токены, используя boost::program_options.
  */
-std::pair<int, std::string> grep_cmd::parse_args(size_t& pos, const std::vector<std::string>& args,
-                                                 std::string& pattern, std::vector<std::string>& files,
+std::pair<int, std::string> grep_cmd::parse_args(size_t& pos,
+                                                 const std::vector<std::string>& args,
+                                                 std::string& pattern,
+                                                 std::vector<std::string>& files,
                                                  bool& is_i,
                                                  bool& is_w,
                                                  bool& is_A,
@@ -93,61 +95,50 @@ std::pair<int, std::string> grep_cmd::parse_args(size_t& pos, const std::vector<
 
     bool first = true;
 
-    for (pos = pos + 1; pos < args.size() and args[pos] != "|"; ++pos) {
+// BOOST ---------------------------------------------------------------------------------------------------------------
+    ++pos;
+    if (pos < args.size() && args[pos] != "|") {
+        auto pos_end = size_t(pos);
+        for (; pos_end < args.size() && args[pos_end] != "|"; ++pos_end);
+
+        std::vector<std::string> args_to_parse(args.begin() + pos, args.begin() + pos_end);
+
+        po::options_description desc("grep options");
+        desc.add_options()
+                ("IGNORE_CASE,i", "ignore case option")
+                ("WORD,w", "find only whole word")
+                ("AFTER,A", po::value<size_t>(), "-A n, n lines after match")
+                ;
+
+        po::variables_map vm;
+
+        try {
+            po::store(po::command_line_parser(args_to_parse).options(desc).run(), vm);
+            po::notify(vm);
+        } catch (boost::wrapexcept<boost::program_options::invalid_option_value>& e1) {
+            return std::make_pair(BAD_CONTEXT_LENGTH, "bad_context");
+
+        } catch (boost::wrapexcept<boost::program_options::unknown_option>& e2) {
+            return std::make_pair(BAD_KEY, e2.get_option_name());
+
+        } catch (std::exception& e3) {
+            return std::make_pair(BAD_KEY, "bad key");
+        }
+
+
+        is_i = vm.count("IGNORE_CASE");
+        is_w = vm.count("WORD");
+        is_A = vm.count("AFTER");
+
+        if (is_A) {
+            n = vm["AFTER"].as<size_t>();
+        }
+
+    }
+// BOOST ---------------------------------------------------------------------------------------------------------------
+
+    for (; pos < args.size() and args[pos] != "|"; ++pos) {
         if (args[pos][0] == '-' && args[pos].length() != 1) {
-
-            bool is_key = false;
-
-            for (auto i = args[pos].begin(); i < args[pos].end(); ++i) {
-
-                switch (*i) {
-                    case '-':
-                        if (!is_key) {
-                            is_key = true;
-                        } else {
-                            return std::make_pair(BAD_KEY, args[pos]);
-                        }
-                        break;
-                    case 'i':
-                        is_i = true;
-                        break;
-                    case 'w':
-                        is_w = true;
-                        break;
-                    case 'A':
-                        if (i + 1 == args[pos].end()) {
-                            ++pos;
-                            if (pos == args.size()) {
-                                return std::make_pair(BAD_CONTEXT_LENGTH, "");
-                            }
-
-                            for (i = args[pos].begin(); i < args[pos].end(); ++i) {
-                                if (!isdigit(*i)) {
-                                    return std::make_pair(BAD_CONTEXT_LENGTH, args[pos]);
-                                }
-                            }
-                            if (!is_A) {
-                                n = std::stoull(args[pos]);
-                            }
-                        } else {
-                            ++i;
-                            auto start = i;
-
-                            for (; i < args[pos].end(); ++i) {
-                                if (!isdigit(*i)) {
-                                    return std::make_pair(BAD_CONTEXT_LENGTH, args[pos]);
-                                }
-                            }
-                            if (!is_A) {
-                                n = std::stoull(std::string(start, args[pos].end()));
-                            }
-                        }
-                        is_A = true;
-                        break;
-                    default:
-                        return std::make_pair(BAD_KEY, args[pos]);
-                }
-            }
         } else if (first) {
             pattern = args[pos];
             first = false;

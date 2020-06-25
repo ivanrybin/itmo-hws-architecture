@@ -12,8 +12,14 @@
 
 #include "command.hpp"
 #include <regex>
+#include <iterator>
+#include <algorithm>
+#include <string>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/variables_map.hpp>
 
 namespace fs = std::experimental::filesystem;
+namespace po = boost::program_options;
 
 /*
  * grep_cmd - реализация абстрактного класса command,

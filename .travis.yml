@@ -8,6 +8,11 @@ compiler: gcc
 os:
   -linux
 
+install:
+  - sudo apt update -qq
+  # Boost
+  - sudo apt install -qq libboost-all-dev
+
 script: 
   - g++ terminal/src/test.cpp
     terminal/src/terminal.cpp
