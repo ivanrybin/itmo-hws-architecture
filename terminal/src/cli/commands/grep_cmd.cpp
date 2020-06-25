@@ -1,51 +1,9 @@
+#include "grep_cmd.hpp"
+
 /*
- * Ivan Rybin, 2020.
- * Software Architecture, ITMO JB SE.
- *
- * grep     - команда terminal, поиск подстроки в файле или stdout
- * grep_cmd - класс, реализующий функциональность команды grep в terminal
- *
- * Пример использования exit в terminal:
- * terminal@user:~ grep [-i] [-A n] [-w] pattern [FILE]
+ *  Метод grep_cmd::execute реализует абстрактный метод command::execute,
+ *  реализуя функциональность команды bash - grep.
  */
-#pragma once
-
-#include "command.hpp"
-#include <regex>
-
-class grep_cmd : public command {
-public:
-    ~grep_cmd() override = default;
-    int execute(std::stringstream& out_buf,
-                std::ostream& out,
-                std::ostream& err,
-                const std::vector<std::string>& args,
-                size_t& pos,
-                bool is_pipe) override;
-
-private:
-    enum PARSE_GREP_RETURNS {
-        NORMAL,
-        BAD_KEY,
-        BAD_CONTEXT_LENGTH
-    };
-
-    static void regex_handler(std::stringstream& out_buf, std::ostream& out, std::string& pattern,
-                              const std::string& file_name,
-                              bool is_i,
-                              bool is_w,
-                              size_t n,
-                              bool is_pipe,
-                              size_t files_cnt);
-
-    static std::pair<int, std::string> parse_args(size_t& pos, const std::vector<std::string>& args,
-                                               std::string& pattern, std::vector<std::string>& files,
-                                               bool& is_i,
-                                               bool& is_w,
-                                               bool& is_A,
-                                               size_t& n);
-}; // grep_cmd
-
 int grep_cmd::execute(std::stringstream& out_buf,
                       std::ostream& out,
                       std::ostream& err,
@@ -120,6 +78,9 @@ int grep_cmd::execute(std::stringstream& out_buf,
     return OK;
 }
 
+/*
+ * Метод grep_cmd::parse_args отвечает за разбор строки на токены.
+ */
 std::pair<int, std::string> grep_cmd::parse_args(size_t& pos, const std::vector<std::string>& args,
                                                  std::string& pattern, std::vector<std::string>& files,
                                                  bool& is_i,
@@ -204,6 +165,9 @@ std::pair<int, std::string> grep_cmd::parse_args(size_t& pos, const std::vector<
     return std::make_pair(NORMAL, "");
 }
 
+/*
+ * Метод grep_cmd::regex_handler отвечает за разбор регулярных выражений в строке.
+ */
 void grep_cmd::regex_handler(std::stringstream& out_buf,
                              std::ostream& out,
                              std::string& pattern,
@@ -216,7 +180,7 @@ void grep_cmd::regex_handler(std::stringstream& out_buf,
     std::string line{};
 
     std::regex regx_pat((is_w) ? ("\\b" + pattern + "\\b") : pattern,
-                           (is_i) ? (std::regex::icase | std::regex::ECMAScript) : std::regex::ECMAScript);
+                        (is_i) ? (std::regex::icase | std::regex::ECMAScript) : std::regex::ECMAScript);
 
     if (files_cnt > 0) {
         std::fstream file(file_name, std::ios::in | std::ios::binary);

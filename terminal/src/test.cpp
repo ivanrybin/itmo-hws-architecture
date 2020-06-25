@@ -3,14 +3,12 @@
  * Software Architecture, ITMO JB SE.
  *
  * Набор тестов для проверки функциональности terminal.
- *
  */
 #include "terminal.hpp"
 
 #include <cassert>
 #include <string>
 #include <sstream>
-#include <cstdio>
 
 // UNCOMMENT TO ENABLE TESTS
 #define ECHO_CMD
@@ -114,14 +112,15 @@ static void cat_cmd_test() {
         assert("test cat\nmultiple string\nwith 3 lines\n" == sout.str());
         clear_streams(sin, sout, serr);
 
-        sin << "cat cat_test.txt cat_test.txt cat_test.txt" << "\n";
+        sin << "cat "
+               "cat_test.txt "
+               "cat_test.txt "
+               "cat_test.txt" << "\n";
         test_t.run();
         assert("test cat\nmultiple string\nwith 3 lines\n"
                "test cat\nmultiple string\nwith 3 lines\n"
                "test cat\nmultiple string\nwith 3 lines\n" == sout.str());
         clear_streams(sin, sout, serr);
-
-        std::remove("cat_test.txt");
     }
     // errors
     {
@@ -130,8 +129,8 @@ static void cat_cmd_test() {
         test_t.run();
         assert("cat: abracadabra.hs: Нет такого файла или каталога\n" == serr.str());
         clear_streams(sin, sout, serr);
-    }
 
+    }
 #endif
 }
 
@@ -180,8 +179,6 @@ static void wc_cmd_test() {
         assert(w_cnt == 0);
         assert(f_size == 0);
         clear_streams(sin, sout, serr);
-
-        std::remove("wc_test.txt");
     }
 
     // basics - not empty file
@@ -201,8 +198,6 @@ static void wc_cmd_test() {
 
         assert(" 2\t2\t28 wc_test.txt\n" == sout.str());
         clear_streams(sin, sout, serr);
-
-        std::remove("wc_test.txt");
     }
 
     // basics - many files
@@ -220,8 +215,6 @@ static void wc_cmd_test() {
         gl(sout, l); assert(" 2\t2\t28 wc_test.txt" == l);
         gl(sout, l); assert(" 6\t6\t84 итого" == l);
         clear_streams(sin, sout, serr);
-
-        std::remove("wc_test.txt");
     }
     // errors
     {
@@ -324,24 +317,33 @@ static void pipe_test() {
         sin << "echo 1 2 3 | wc"         << "\n";
         sin << "echo 1 | echo 2"         << "\n";
         sin << "echo 1 | echo 2 | pwd "  << "\n";
-        sin << "echo ABCDEFG | grep -iA10 abc | wc "  << "\n";
+
         test_t.run();
 
         gl(sout, l); assert(" 1\t3\t6" == l);
         gl(sout, l); assert("2" == l);
         gl(sout, l); assert(fs::current_path() == l);
-        gl(sout, l); assert(" 1\t1\t8" == l);
     }
 
 #endif
 }
 
 int main() {
-    echo_cmd_and_dollar_test();
-    cat_cmd_test();
-    pwd_cmd_test();
-    wc_cmd_test();
-    grep_cmd_test();
-    pipe_test();
+    bool is_exc = false;
+    try {
+        echo_cmd_and_dollar_test();
+        cat_cmd_test();
+        pwd_cmd_test();
+        wc_cmd_test();
+        grep_cmd_test();
+        pipe_test();
+    } catch (std::exception& e) {
+        is_exc = true;
+        std::cout << "Oh, something bad happened:" << std::endl;
+        std::cout << e.what() << std::endl;
+    }
+    if (!is_exc) {
+        std::cout << "6/6 Tests passed!" << std::endl;
+    }
     return 0;
 }

@@ -1,44 +1,30 @@
 /*
  * Ivan Rybin, 2020.
  * Software Architecture, ITMO JB SE.
- *
- * cat     - команда terminal, вывод файла в консоль
- * cat_cmd - класс, реализующий функциональность команды cat в terminal
- *
- * Пример использования cat в terminal:
- * terminal@user:~ cat [FILEPATH]
  */
-#pragma once
+#include "cat_cmd.hpp"
 
-#include "command.hpp"
-
-namespace fs = std::experimental::filesystem;
-
-class cat_cmd : public command {
-public:
-    ~cat_cmd() override = default;
-    int execute(std::stringstream& out_buf,
-                std::ostream& out,
-                std::ostream& err,
-                const std::vector<std::string>& args,
-                size_t& pos,
-                bool is_pipe) override;
-}; // cat_cmd
-
+/*
+ * Метод cat_cmd::execute реализует абстрактный метод command::execute,
+ * реализуя функциональность команды bash - cat.
+ */
 int cat_cmd::execute(std::stringstream& out_buf,
-            std::ostream& out,
-            std::ostream& err,
-            const std::vector<std::string>& args,
-            size_t& pos,
-            bool is_pipe) {
+                     std::ostream& out,
+                     std::ostream& err,
+                     const std::vector<std::string>& args,
+                     size_t& pos,
+                     bool is_pipe) {
 
-    out_buf.str("");
-    out_buf.clear();
-
-    if (pos + 1 == args.size()) {
+    if (pos + 1 == args.size() && !out_buf.str().empty()) {
+        if (!is_pipe) {
+            out << out_buf.str();
+        }
+        out_buf.str("");
+        out_buf.clear();
+    } else if (pos + 1 == args.size() && out_buf.str().empty()) {
         std::string input_str{};
 
-        while(!getline(std::cin ,input_str).eof()) {
+        while(!getline(std::cin, input_str).eof()) {
             if (input_str == "^C") {
                 break;
             }
@@ -50,7 +36,10 @@ int cat_cmd::execute(std::stringstream& out_buf,
         }
 
     } else {
-        for (pos = pos + 1; pos < args.size() and args[pos] != "|"; ++pos) {
+        out_buf.str("");
+        out_buf.clear();
+
+        for (pos = pos + 1; pos < args.size() && args[pos] != "|"; ++pos) {
             fs::path p(args[pos]);
 
             if (fs::exists(p)) {
@@ -83,6 +72,3 @@ int cat_cmd::execute(std::stringstream& out_buf,
     }
     return OK;
 }
-
-
-
