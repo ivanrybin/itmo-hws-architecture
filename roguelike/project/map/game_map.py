@@ -1,3 +1,7 @@
+"""
+    Map реализует игровую карту.
+"""
+
 from map.cell import Cell
 from map.room import Room
 from map.wall import Wall

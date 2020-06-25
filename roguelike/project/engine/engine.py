@@ -1,16 +1,21 @@
+"""
+    Engine реализует движок игры.
+    Через него происходят все операции, связанные с логикой и механикой игры.
+"""
+
 import tcod as tc
 import random as rnd
 import os
 
 # render
 import engine.render as rr
-from engine.bar import Bar
 
 # logic
 from engine.serialization import serialize_engine, deserialize_engine
 from logic.player import Player
 from logic.mob import Mob
-from logic.strategy import *
+from logic.patterns.strategy import *
+from logic.patterns.command import *
 from logic.states import State
 from logic.entity import EntityType
 from logic.entity_stats import EntityStats
@@ -20,8 +25,6 @@ from logic.inventory import *
 
 # map
 from map.game_map import Map
-from map.wall import Wall
-from map.room import Room
 
 
 def to_int(value):
@@ -137,7 +140,7 @@ class Engine:
             mob.stats.owner = mob
             mobs.append(mob)
 
-        # генерация зелий
+        # генерация предметов
         items = []
         items_probs = {(0, 0.2): 'healing',
                        (0.2, 0.4): 'intoxicating',
@@ -223,7 +226,7 @@ class Engine:
             if event.type == "KEYDOWN":
                 # передача управления в инвентарь
                 if self.map.state != State.PLAYER_DEAD and self.map.state in [State.SHOWING_MENU, State.DROP_ITEM]:
-                    return self.__inventory_keys_handler(event.sym)
+                    return Command(self.__inventory_keys_handler, event.sym)
 
                 if event.sym == tc.event.K_ESCAPE:
                     # выход из инвентаря
@@ -234,30 +237,31 @@ class Engine:
                         self.IS_GAME = False
                 if self.map.state != State.PLAYER_DEAD:
                     if event.sym == tc.event.K_UP:
-                        return self.player.move(self.player, "UP", self.map, self.entities)
+                        return Command(self.player.move, self.player, "UP", self.map, self.entities)
                     if event.sym == tc.event.K_DOWN:
-                        return self.player.move(self.player, "DOWN", self.map, self.entities)
+                        return Command(self.player.move, self.player, "DOWN", self.map, self.entities)
                     if event.sym == tc.event.K_LEFT:
-                        return self.player.move(self.player, "LEFT", self.map, self.entities)
+                        return Command(self.player.move, self.player, "LEFT", self.map, self.entities)
                     if event.sym == tc.event.K_RIGHT:
-                        return self.player.move(self.player, "RIGHT", self.map, self.entities)
+                        return Command(self.player.move, self.player, "RIGHT", self.map, self.entities)
                     if event.sym == tc.event.K_g:
-                        return self.player.get_item(self.map, self.entities)
+                        return Command(self.player.get_item, self.map, self.entities)
                     if event.sym == tc.event.K_i:
                         # выход из меню инвентаря
                         if self.map.state == State.SHOWING_MENU:
                             self.map.state = self.prev_state
-                            print(self.map.state)
-                            return []
+                            return Command(identity, [])
                         # вход в меню инвентаря
-                        return [{'show_menu': True}]
+                        return Command(identity, [{'show_menu': True}])
                     if event.sym == tc.event.K_d:
                         # выход из drop меню инвентаря
                         if self.map.state == State.DROP_ITEM:
                             self.map.state = self.prev_state
-                            return []
+                            return Command(identity, [])
                         # вход в drop меню инвентаря
-                        return [{'drop_menu': True}]
+                        return Command(identity, [{'drop_menu': True}])
+
+        return Command(identity, [])
 
     def run(self):
         self.IS_GAME = True
@@ -279,7 +283,9 @@ class Engine:
                 # удаление предыдущих позиций
                 rr.clear_all(root_console, self.entities)
                 # получени ввода пользователя
-                info = self.__keys_handler()
+                command = self.__keys_handler()
+                # паттерн команда
+                info = command.execute()
                 # логгирование в консоль
                 if info:
                     for item in info:

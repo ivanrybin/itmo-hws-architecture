@@ -1,3 +1,9 @@
+"""
+    Rectangle базовый класс для всех объектов карты.
+    Реализует прямоугольник.
+"""
+
+
 class Rectangle:
     def __init__(self, x, y, width, height):
         self.x1 = x
@@ -13,4 +19,3 @@ class Rectangle:
 
     def is_point_in(self, x, y):
         return self.x1 <= x <= self.x2 and self.y1 <= y <= self.y2
-

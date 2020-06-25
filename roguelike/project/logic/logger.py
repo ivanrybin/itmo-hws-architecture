@@ -1,6 +1,10 @@
-import tcod as tc
+"""
+    MessageLog реализует логирование игровых событий для их последующего вывода.
+"""
 
+import tcod as tc
 import textwrap as tw
+
 
 class Message:
     def __init__(self, text, color=tc.white):

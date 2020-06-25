@@ -1,3 +1,7 @@
+"""
+    Player реализация сущности игрока.
+"""
+
 from logic.entity import *
 from logic.logger import Message
 from logic.states import State
@@ -51,7 +55,7 @@ class Player(Entity):
         if game_map.is_cell_blocked(self.x + dx, self.y + dy):
             return []
 
-        victim = who_blockes(self, mobs[1:], self.x + dx, self.y + dy)
+        victim = who_blocks(self, mobs[1:], self.x + dx, self.y + dy)
 
         if victim:
             return self.stats.attack_target(victim)

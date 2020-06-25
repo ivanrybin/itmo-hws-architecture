@@ -1,3 +1,8 @@
+"""
+    Wall реализация стены.
+"""
+
+
 from map.rectangle import Rectangle
 
 

@@ -1,12 +1,17 @@
-import tcod as tc
-import numpy as np
+"""
+    Entity - базовый класс для всех сущностей игры.
+"""
+
 import math
 import time
+import tcod as tc
+import numpy as np
 from enum import Enum
 
 from engine.render import RenderOrder
 
-def who_blockes(self, mobs, dest_x, dest_y):
+
+def who_blocks(self, mobs, dest_x, dest_y):
     for mob in mobs:
         if mob != self and mob.x == dest_x and mob.y == dest_y and mob.stats and mob.is_blocking:
             return mob
@@ -78,7 +83,7 @@ class Entity:
         dx = int(dx / dist)
         dy = int(dy / dist)
 
-        other = who_blockes(self, mobs, self.x + dx, self.y + dy)
+        other = who_blocks(self, mobs, self.x + dx, self.y + dy)
         if not game_map.is_cell_blocked(self.x + dx, self.y + dy) and other is None:
             self.update_pos(self.x + dx, self.y + dy)
 

@@ -1,9 +1,15 @@
-import tcod as tc
-import time
-import random as rnd
+"""
+    Паттерн Стратегия.
 
-from logic.entity import who_blockes
-from logic.states import State
+    Base:    Strategy           - интерфейс стратегии, включающий
+                                  единственный метод act(*args, **kwargs)
+
+    Derived: PassiveStrategy    - реализация пассивной стратегии
+             AggressiveStrategy - реализация агрессивноый стратегии
+             CowardStrategy     - реализация трусливой стратегии
+"""
+
+import tcod as tc
 
 
 class Strategy:

@@ -1,3 +1,7 @@
+"""
+    EntityStats реализует учет и обновление статистик игровых сущностей.
+"""
+
 import time
 import tcod as tc
 

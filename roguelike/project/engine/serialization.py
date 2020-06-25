@@ -1,13 +1,17 @@
+"""
+    Блок отвечающий за (де)сериализацию состояния игры в JSON.
+    Используется для поддержки сохранений.
+"""
+
 import json
 import os
 
-from logic.entity import *
 from logic.entity_stats import EntityStats
 from logic.inventory import Inventory, Armour, Item
 from logic.logger import MessageLog
 from logic.mob import Mob
 from logic.player import *
-from logic.strategy import *
+from logic.patterns.strategy import *
 from map.cell import *
 from logic.states import State
 from map.game_map import Map

@@ -1,3 +1,7 @@
+"""
+    Методы, уничтожающие сущности на карте.
+"""
+
 import tcod as tc
 
 from logic.states import State

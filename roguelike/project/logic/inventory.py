@@ -1,5 +1,9 @@
-import tcod as tc
+"""
+    Inventory реализует инвентарь игрока.
+"""
 
+
+import tcod as tc
 from logic.logger import Message
 from logic.entity import EntityType
 
@@ -11,6 +15,7 @@ class Item:
 
 class Armour(Item):
     def __init__(self, defense=5, color=tc.dark_blue):
+        super().__init__()
         self.defense = defense
         self.max_defense = defense
         self.color = color
@@ -18,6 +23,7 @@ class Armour(Item):
 
 class Sword(Item):
     def __init__(self, attack=5):
+        super().__init__()
         self.attack = attack
 
 
@@ -74,5 +80,3 @@ class Inventory:
         info.append({'message': Message(f'You dropped {item_entity.name}', tc.yellow)})
 
         return info
-
-

@@ -1,3 +1,8 @@
+"""
+    Room реализация комнаты в dungeon mode.
+"""
+
+
 from map.rectangle import Rectangle
 
 

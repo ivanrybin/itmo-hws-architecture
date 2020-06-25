@@ -1,6 +1,9 @@
+"""
+    Блок отвечающий за отрисовку всех объектов игры.
+"""
+
 import tcod as tc
 
-from enum import Enum
 from logic.states import State
 from engine.menu import inventory_menu
 
@@ -110,7 +113,3 @@ def render_all(cons, bars_cons, player, game_map, entities, screen_width, screen
     elif game_map.state == State.DROP_ITEM:
         inventory_menu(cons, 'Drop item via 1,2,3 and/or press Esc to quit.\n',
                        player.inventory, 50, screen_width, screen_height)
-
-
-
-

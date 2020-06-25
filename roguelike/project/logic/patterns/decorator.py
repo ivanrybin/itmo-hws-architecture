@@ -1,16 +1,25 @@
-from logic.player import who_blockes
+"""
+    Паттерн Декоратор.
+
+    intoxicating_deco(player)  - декорирует движение игрока
+                                 на произвольные шаги по направлению движения,
+                                 подменяя на время player.move() на drunk_move(),
+                                 с помощью питоновских диктов.
+"""
+
+from logic.player import who_blocks
 from logic.states import State
 
-from time import time
 import random as rnd
 import tcod as tc
+from time import time
 
 
 def intoxicating_deco(player):
     # deco func
-    def new_move(self, move_type, game_map, mobs):
+    def drunk_move(self, move_type, game_map, mobs):
         # проверяет не вышло ли время интоксикации
-        # если вышло возвращает исходную функцию движения на место
+        # если вышло - возвращает исходную функцию движения на место
         start_t = self.stats.intox_start_time
         if start_t and time() - start_t >= 7:
             self.move = self.__old_move
@@ -26,7 +35,7 @@ def intoxicating_deco(player):
         if game_map.is_cell_blocked(self.x + dx, self.y + dy):
             return []
 
-        victim = who_blockes(self, mobs[1:], self.x + dx, self.y + dy)
+        victim = who_blocks(self, mobs[1:], self.x + dx, self.y + dy)
 
         if victim:
             return self.stats.attack_target(victim)
@@ -51,5 +60,5 @@ def intoxicating_deco(player):
 
     player.__old_move = player.move
     player.__old_color = player.color
-    player.move = new_move
+    player.move = drunk_move
     player.color = tc.fuchsia

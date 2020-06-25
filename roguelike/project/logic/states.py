@@ -1,3 +1,7 @@
+"""
+    Состояния игры.
+"""
+
 from enum import Enum
 
 
@@ -7,4 +11,3 @@ class State(Enum):
     PLAYER_DEAD = 3
     SHOWING_MENU = 4
     DROP_ITEM = 5
-

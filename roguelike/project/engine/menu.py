@@ -1,21 +1,17 @@
+"""
+    Отрисовка меню.
+"""
+
 import tcod as tc
 
 
-def menu(con, header, options, width, screen_width, screen_height):
-    if len(options) > 26 : raise ValueError('Cannot have a menu with more than 26 options.')
-
-    # calculate total height for the header (after auto-wrap) and one line per option
-    header_height = tc.console_get_height_rect(con, 0, 0, width, screen_height, header)
+def menu(con, text, options, menu_width, screen_width, screen_height):
+    header_height = tc.console_get_height_rect(con, 0, 0, menu_width, screen_height, text)
     height = len(options) + header_height
-
-    # create an off-screen console that represents the menu's window
-    window = tc.console_new(width, height)
-
-    # print the header, with auto-wrap
+    window = tc.console_new(menu_width, height)
     tc.console_set_default_foreground(window, tc.white)
-    tc.console_print_rect_ex(window, 0, 0, width, height, tc.BKGND_NONE, tc.LEFT, header)
+    tc.console_print_rect_ex(window, 0, 0, menu_width, height, tc.BKGND_NONE, tc.LEFT, text)
 
-    # print all the options
     y = header_height
     letter_index = ord('a')
     for option_text in options:
@@ -24,10 +20,9 @@ def menu(con, header, options, width, screen_width, screen_height):
         y += 1
         letter_index += 1
 
-    # blit the contents of "window" to the root console
-    x = int(screen_width / 2 - width / 2)
+    x = int(screen_width / 2 - menu_width / 2)
     y = int(screen_height / 2 - height / 2)
-    tc.console_blit(window, 0, 0, width, height, 0, x, y, 1.0, 0.7)
+    tc.console_blit(window, 0, 0, menu_width, height, 0, x, y, 1.0, 0.7)
     window.clear()
 
 

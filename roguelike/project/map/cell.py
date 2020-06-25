@@ -1,3 +1,8 @@
+"""
+    Cell реализует клетку игрового поля.
+"""
+
+
 class Cell:
     def __init__(self, is_blocked, is_discovered=None):
         self.is_blocked = is_blocked

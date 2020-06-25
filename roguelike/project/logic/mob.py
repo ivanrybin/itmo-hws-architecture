@@ -1,5 +1,7 @@
-import tcod as tc
-import time
+"""
+    Mob реализация мобов.
+"""
+
 import random as rnd
 from logic.entity import Entity
 
