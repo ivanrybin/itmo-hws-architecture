@@ -3,7 +3,6 @@
  * Software Architecture, ITMO JB SE.
  *
  * Набор тестов для проверки функциональности terminal.
- *
  */
 #include "terminal.hpp"
 
@@ -250,10 +249,20 @@ static void pipe_test() {
 }
 
 int main() {
-    echo_cmd_and_dollar_test();
-    cat_cmd_test();
-    pwd_cmd_test();
-    wc_cmd_test();
-    pipe_test();
+    bool is_exc = false;
+    try {
+        echo_cmd_and_dollar_test();
+        cat_cmd_test();
+        pwd_cmd_test();
+        wc_cmd_test();
+        pipe_test();
+    } catch (std::exception& e) {
+        is_exc = true;
+        std::cout << "Oh, something bad happened:" << std::endl;
+        std::cout << e.what() << std::endl;
+    }
+    if (!is_exc) {
+        std::cout << "5/5 Tests passed!" << std::endl;
+    }
     return 0;
 }

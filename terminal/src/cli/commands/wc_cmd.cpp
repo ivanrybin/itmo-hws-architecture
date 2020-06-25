@@ -1,35 +1,18 @@
 /*
  * Ivan Rybin, 2020.
  * Software Architecture, ITMO JB SE.
- *
- * wc     - команда terminal, вывод числа строк, слов, байт в файле/строке
- * wc_cmd - класс, реализующий функциональность команды wc в terminal
- *
- * Пример использования wc в terminal:
- * terminal@user:~ wc [FILEPATH]
  */
-#pragma once
+#include "wc_cmd.hpp"
 
-#include "command.hpp"
-
-namespace fs = std::experimental::filesystem;
-
-class wc_cmd : public command {
-public:
-    ~wc_cmd() override = default;
-    int execute(std::stringstream& out_buf,
-                std::ostream& out,
-                std::ostream& err,
-                const std::vector<std::string>& args,
-                size_t& pos,
-                bool is_pipe) override;
-private:
-    static void words_lines_counter(std::istream& stream, size_t& f_size,  size_t& l_cnt,   size_t& w_cnt,
-                                                   size_t& f_total, size_t& l_total, size_t& w_total);
-}; // wc_cmd
-
+/*
+ *  Метод wc_cmd::words_lines_counter вспомогательная функция wc_cmd,
+ *  подсчитывающая размер файла, число строк и слов, входящих в него.
+ *
+ *  Используется в wc_cmd::execute.
+ */
 void wc_cmd::words_lines_counter(std::istream& stream, size_t& f_size,  size_t& l_cnt,   size_t& w_cnt,
-                                                       size_t& f_total, size_t& l_total, size_t& w_total) {
+                                 size_t& f_total, size_t& l_total, size_t& w_total) {
+
     std::string tmp{};
 
     l_cnt = std::count(std::istreambuf_iterator<char>(stream),std::istreambuf_iterator<char>(), '\n');
@@ -43,13 +26,16 @@ void wc_cmd::words_lines_counter(std::istream& stream, size_t& f_size,  size_t& 
     w_total += w_cnt;
 }
 
+/*
+ *  Метод wc_cmd::execute реализует абстрактный метод command::execute,
+ *  реализуя функциональность команды bash - wc.
+ */
 int wc_cmd::execute(std::stringstream& out_buf,
-            std::ostream& out,
-            std::ostream& err,
-            const std::vector<std::string>& args,
-            size_t& pos,
-            bool is_pipe) {
-
+                    std::ostream& out,
+                    std::ostream& err,
+                    const std::vector<std::string>& args,
+                    size_t& pos,
+                    bool is_pipe) {
     std::string buf{};
     size_t f_cnt    = 0;
     size_t l_cnt    = 0;
@@ -58,7 +44,7 @@ int wc_cmd::execute(std::stringstream& out_buf,
     size_t f_total  = 0;
     size_t l_total  = 0;
     size_t w_total  = 0;
-    if (pos + 1 >= args.size() and !out_buf.str().empty()) {
+    if ((pos + 1 >= args.size() || (pos + 1 < args.size() && args[pos + 1] == "|")) and !out_buf.str().empty()) {
 
         f_size = out_buf.str().size();
         words_lines_counter(out_buf, f_size, l_cnt, w_cnt, f_total, l_total, w_total);
@@ -72,6 +58,9 @@ int wc_cmd::execute(std::stringstream& out_buf,
         out_buf << " " << l_cnt << "\t" << w_cnt << "\t" << f_size << std::endl;
 
     } else {
+        out_buf.str("");
+        out_buf.clear();
+
         for (pos = pos + 1; pos < args.size() and args[pos] != "|"; ++pos) {
             fs::path p(args[pos]);
 
@@ -117,7 +106,6 @@ int wc_cmd::execute(std::stringstream& out_buf,
         }
         out_buf << " " << l_total << "\t" << w_total << "\t" << f_total << " итого" << std::endl;
     }
+
     return OK;
 }
-
-
