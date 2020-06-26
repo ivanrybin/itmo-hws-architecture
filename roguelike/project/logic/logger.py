@@ -12,6 +12,16 @@ class Message:
         self.color = color
 
 
+class OperationLog:
+    def __init__(self, lst_log=None):
+        if lst_log is None:
+            lst_log = []
+        self.log = lst_log
+
+    def add_item(self, item):
+        self.log.append(item)
+
+
 class MessageLog:
     def __init__(self, x, width, height):
         self.msgs = []

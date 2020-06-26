@@ -6,196 +6,21 @@
 import json
 import os
 
+from engine.engine import Engine
+from engine.engine_initializer import EngineInfo, EngineInitializer
+from engine.render import RenderOrder, recompute_fov
 from logic.entity_stats import EntityStats
-from logic.inventory import Inventory, Armour, Item
-from logic.logger import MessageLog
+from logic.inventory import Inventory, Armour, Item, ItemType, HealthPotion, IntoxPotion
 from logic.mob import Mob
 from logic.player import *
 from logic.patterns.strategy import *
-from map.cell import *
-from logic.states import State
+from map.cell import Cell
 from map.game_map import Map
-from map.room import Room
 from map.wall import Wall
 
 
-def get_engine_stats(engine):
-    engine_stats = {'engine': {
-        'width': engine.scr_wd,
-        'height': engine.scr_ht,
-        'p_x': engine.player_init_x,
-        'p_y': engine.player_init_y,
-        'dungeon': engine.dungeon,
-        'player_lvl': engine.player_lvl,
-        'killed_on_lvl': engine.killed_on_lvl,
-        'fov_mode': engine.FOV_MODE,
-        'debug': engine.DEBUG,
-        'FONT_PATH': engine.FONT_PATH,
-        'GAME_NAME': engine.GAME_NAME
-    }}
-    if engine.prev_state:
-        engine_stats['engine']['prev_state'] = engine.prev_state.value
-    else:
-        engine_stats['engine']['prev_state'] = None
-
-    return engine_stats
-
-
-def get_map_stats(engine):
-    map_stats = {'map': {
-        'state': engine.map.state.value,
-        'walls': [],
-        'rooms': [],
-        'cells': []
-    }
-    }
-    for wall in engine.map.walls:
-        map_stats['map']['walls'].append({
-            'x1': wall.x1,
-            'x2': wall.x2,
-            'y1': wall.y1,
-            'y2': wall.y2,
-        })
-
-    for room in engine.map.rooms:
-        map_stats['map']['rooms'].append({
-            'x1': room.x1,
-            'x2': room.x2,
-            'y1': room.y1,
-            'y2': room.y2,
-        })
-
-    for cells in engine.map.cells:
-        lst = []
-        for cell in cells:
-            lst.append({
-                'is_blocked': cell.is_blocked,
-                'is_discovered': cell.is_discovered,
-            })
-        map_stats['map']['cells'].append(lst)
-
-    return map_stats
-
-
-def get_entities_stats(engine):
-    entities_stats = {'entities': []}
-    for entity in engine.entities[1:]:
-        if entity.char == ord('#'):
-            continue
-
-        stat = {
-            'x': entity.x,
-            'y': entity.y,
-            'ch': entity.char,
-            'clr': entity.color,
-            'name': entity.name,
-            'strat': entity.strategy.__name__,
-            'is_block': entity.is_blocking,
-            'type': entity.type.value,
-            'main_clr': entity.main_color,
-            'stats': {
-                'hp': entity.stats.hp,
-                'max_hp': entity.stats.max_hp,
-                'force': entity.stats.force,
-                'defense': entity.stats.defense,
-                'max_defense': entity.stats.max_defense
-            }
-        }
-        if isinstance(entity.item, Armour):
-            stat['item'] = {
-                'defense': entity.item.defense,
-                'max_defense': entity.item.max_defense,
-                'color': entity.item.color
-            }
-        elif entity.item:
-            stat['item'] = {}
-
-        entities_stats['entities'].append(stat)
-    return entities_stats
-
-
-def get_player_stats(engine):
-    player = engine.player
-    player_stats = {'player': {
-        'x': player.x,
-        'y': player.y,
-        'ch': player.char,
-        'clr': player.color,
-        'name': player.name,
-        'is_block': player.is_blocking,
-        'main_clr': player.main_color,
-        'stats': {
-            'hp': player.stats.hp,
-            'max_hp': player.stats.max_hp,
-            'force': player.stats.force,
-            'defense': player.stats.defense,
-            'max_defense': player.stats.max_defense,
-        }
-    }
-    }
-
-    if player.stats.armour:
-        player_stats['player']['armour'] = {
-            'x': player.stats.armour.x,
-            'y': player.stats.armour.y,
-            'ch': player.stats.armour.char,
-            'clr': player.stats.armour.color,
-            'name': player.stats.armour.name,
-            'strat': player.stats.armour.strategy.__name__,
-            'is_block': player.stats.armour.is_blocking,
-            'type': player.stats.armour.type.value,
-            'main_clr': player.stats.armour.main_color,
-            'stats': {
-                'hp': player.stats.armour.stats.hp,
-                'max_hp': player.stats.armour.stats.max_hp,
-                'force': player.stats.armour.stats.force,
-                'defense': player.stats.armour.stats.defense,
-                'max_defense': player.stats.armour.stats.max_defense,
-            },
-            'item': {
-                'defense': player.stats.armour.item.defense,
-                'max_defense': player.stats.armour.item.max_defense,
-                'color': player.stats.armour.item.color
-            }
-        }
-    player_stats['player']['inventory'] = {'size': len(player.inventory.items),
-                                           'items': []}
-
-    for item in player.inventory.items:
-        player_stats['player']['inventory']['items'].append({
-            'x': item.x,
-            'y': item.y,
-            'ch': item.char,
-            'clr': item.color,
-            'name': item.name,
-            'strat': item.strategy.__name__,
-            'is_block': item.is_blocking,
-            'type': item.type.value,
-            'main_clr': item.main_color,
-            'stats': {
-                'hp': item.stats.hp,
-                'max_hp': item.stats.max_hp,
-                'force': item.stats.force,
-                'defense': item.stats.defense,
-                'max_defense': item.stats.max_defense,
-            },
-            'item': {
-                'defense': item.item.defense,
-                'max_defense': item.item.max_defense,
-                'color': item.item.color,
-            }
-        })
-
-    return player_stats
-
-
-def serialize_engine(engine):
-    data = {
-        **get_engine_stats(engine),
-        **get_entities_stats(engine),
-        **get_player_stats(engine),
-        **get_map_stats(engine)
-    }
+def save_game(engine):
+    data = engine.serialize()
 
     flag = 'x'
     if os.path.isfile('media/GAME_SAVE.json'):
@@ -205,177 +30,187 @@ def serialize_engine(engine):
         json.dump(data, file, indent=4)
 
 
-def get_engine_from_stats(data, engine):
-    engine.scr_wd = int(data['width'])
-    engine.scr_ht = int(data['height'])
-    engine.player_init_x = int(data['p_x'])
-    engine.player_init_y = int(data['p_y'])
-    engine.dungeon = data['dungeon']
-    engine.player_lvl = int(data['player_lvl'])
-    engine.killed_on_lvl = int(data['killed_on_lvl'])
-    engine.fov_mode = bool(data['fov_mode'])
-    engine.DEBUG = bool(data['debug'])
-    engine.FONT_PATH = str(data['FONT_PATH'])
-    engine.GAME_NAME = str(data['GAME_NAME'])
-    if data['prev_state']:
-        engine.prev_state = State(int(data['prev_state']))
-    else:
-        engine.prev_state = None
-    engine.msg_log = MessageLog(0, 26, 3)
-    engine.BARS_CONS = tc.console_new(engine.scr_wd, engine.scr_ht)
-    engine.FOV_MODE = bool(data['fov_mode'])
+def deserialize_stats(data):
+    stats = EntityStats(data['hp'], data['force'], data['defense'])
+    stats.max_hp = data['max_hp']
+    stats.max_defense = data['max_def']
+    return stats
 
 
-def get_map_from_stats(data, engine):
-    game_map = Map(engine.scr_wd,
-                   engine.scr_ht,
-                   engine.player_init_x,
-                   engine.player_init_y)
-    game_map.state = State.MOB_TURN
+def deserialize_item(data):
+    if not data:
+        return Item()
 
-    game_map.cells = []
-    for cells in data['cells']:
-        row_cells = []
-        for cell_stats in cells:
-            cell = Cell(game_map.dungeon)
-            cell.is_blocked = bool(cell_stats['is_blocked'])
-            cell.is_discovered = bool(cell_stats['is_discovered'])
-            row_cells.append(cell)
+    print(data)
 
-        game_map.cells.append(row_cells)
+    item_type = ItemType(int(data['type']))
 
-    game_map.rooms = []
-    for room_stats in data['rooms']:
-        room = Room(0, 0, 0, 0)
-        room.x1, room.x2 = int(room_stats['x1']), int(room_stats['x2'])
-        room.y1, room.y2 = int(room_stats['y1']), int(room_stats['y2'])
+    if item_type in [ItemType.ARMOUR_I, ItemType.ARMOUR_II]:
+        item = Armour(defense=data['defense'], color=data['clr'], arm_type=item_type)
+        item.max_defense = data['max_def']
+        return item
 
-        game_map.rooms.append(room)
+    if item_type == ItemType.HP_PTN:
+        item = HealthPotion(health_up=data['hp_up'], color=data['clr'])
+        item.type = ItemType(int(data['type']))
+        return item
 
-    game_map.walls = []
-    for wall_stats in data['walls']:
-        wall = Wall(0, 0, 0, 0)
-        wall.x1, wall.x2 = int(wall_stats['x1']), int(wall_stats['x2'])
-        wall.y1, wall.y2 = int(wall_stats['y1']), int(wall_stats['y2'])
+    if item_type == ItemType.INTOX_PTN:
+        item = IntoxPotion(intox_time=data['intox_time'], color=data['clr'])
+        item.type = ItemType(int(data['type']))
+        return item
 
-        game_map.walls.append(wall)
-
-    engine.map = game_map
-    if engine.fov_mode:
-        engine.fov_radius = 15
-        engine.fov = engine._init_fov()
+    return Item()
 
 
-def get_player_from_stats(data, engine):
-    # --------------------------------------------------
-    def init_item(item_data):
-        stats = EntityStats(hp=item_data['stats']['max_hp'],
-                            force=item_data['stats']['force'],
-                            defense=item_data['stats']['max_defense'])
-        stats.hp = item_data['stats']['hp']
-        stats.defense = item_data['stats']['defense']
+def deserialize_inventory(data):
+    inventory = Inventory(data['maxsize'])
+    inventory.items = [deserialize_mob(item, None) for item in data['items']]
+    return inventory
 
+
+def deserialize_mob(data, move_handler):
+    mob = Mob(data['x'], data['y'], data['scr_wd'], data['scr_ht'],
+              data['ch'], data['clr'], data['name'],
+              is_blocking=bool(data['is_block']),
+              render_order=RenderOrder(int(data['render_ord'])),
+              load_type='LOAD')
+
+    mob.main_color = data['main_clr']
+    mob.mv_handler = move_handler
+    if mob.mv_handler:
+        mob.mv_handler.owner = mob
+
+    strat = PassiveStrategy
+    if data['strat'] == 'PassiveStrategy':
         strat = PassiveStrategy
-        if item_data['strat'] == 'PassiveStrategy':
-            strat = PassiveStrategy
-        elif item_data['strat'] == 'AggressiveStrategy':
-            strat = AggressiveStrategy
-        elif item_data['strat'] == 'CowardStrategy':
-            strat = CowardStrategy
+    elif data['strat'] == 'AggressiveStrategy':
+        strat = AggressiveStrategy
+    elif data['strat'] == 'CowardStrategy':
+        strat = CowardStrategy
 
-        item = Armour(defense=item_data['item']['max_defense'],
-                      color=item_data['item']['color'])
-        item.defense = item_data['item']['defense']
+    mob.strategy = strat
 
-        mob = Mob(item_data['x'], item_data['y'],
-                  screen_width=engine.scr_wd, screen_height=engine.scr_ht,
-                  char=item_data['ch'], color=item_data['clr'],
-                  name=item_data['name'], stats=stats,
-                  game_map=engine.map, strategy=strat,
-                  item=item,
-                  is_blocking=bool(item_data['is_block']),
-                  entity_type=EntityType(int(item_data['type']))
-                  )
-
+    if data['stats']:
+        mob.stats = deserialize_stats(data['stats'])
         mob.stats.owner = mob
-        mob.mv_time = time.time()
+    if data['item']:
+        mob.item = deserialize_item(data['item'])
+        mob.item.owner = mob
+    if data['inventory']:
+        mob.inventory = deserialize_inventory(data['inventory'])
+        mob.inventory.owner = mob
+    if data['type']:
+        mob.type = EntityType(int(data['type']))
 
-        return mob
-
-    # --------------------------------------------------
-    stats = EntityStats(hp=10 * engine.player_lvl, force=2 * engine.player_lvl, defense=2 * engine.player_lvl)
-    engine.player = Player(data['x'], data['y'],
-                           screen_width=engine.scr_wd, screen_height=engine.scr_ht,
-                           char=data['ch'], color=data['clr'], name=data['name'], stats=stats,
-                           inventory=Inventory(3),
-                           entity_type=EntityType.PLAYER)
-
-    engine.player.stats.hp = data['stats']['hp']
-    engine.player.stats.max_hp = data['stats']['max_hp']
-    engine.player.stats.force = data['stats']['force']
-    engine.player.stats.defense = data['stats']['defense']
-    engine.player.stats.max_defense = data['stats']['max_defense']
-    engine.player.stats.owner = engine.player
-    engine.player.stats.armour = None
-
-    if 'armour' in data:
-        engine.player.stats.armour = init_item(data['armour'])
-
-    inventory = Inventory(int(data['inventory']['size']))
-    for item_stat in data['inventory']['items']:
-        inventory.items.append(init_item(item_stat))
-
-    engine.entities = [engine.player]
+    return mob
 
 
-def get_entities_from_stats(data, engine):
-    for entity in data:
-        stats = EntityStats(hp=entity['stats']['max_hp'],
-                            force=entity['stats']['force'],
-                            defense=entity['stats']['max_defense'])
-        stats.hp = entity['stats']['hp']
-        stats.defense = entity['stats']['defense']
+def deserialize_info(data):
+    info = EngineInfo(int(data['scr_wd']),
+                      int(data['scr_ht']),
+                      int(data['p_lvl']),
+                      bool(data['fov_mode']),
+                      bool(data['DEBUG']))
 
-        strat = PassiveStrategy
-        if entity['strat'] == 'PassiveStrategy':
-            strat = PassiveStrategy
-        elif entity['strat'] == 'AggressiveStrategy':
-            strat = AggressiveStrategy
-        elif entity['strat'] == 'CowardStrategy':
-            strat = CowardStrategy
+    info.killed_on_lvl = int(data["kill_lvl"])
+    info.mobs_cnt = data["mobs_cnt"]
+    info.FONT_PATH = data["FONT_PATH"]
+    info.GAME_NAME = data["GAME_NAME"]
 
-        e_type = EntityType(int(entity['type']))
-        item = None
-        if e_type == EntityType.ARMOUR:
-            item = Armour(entity['item']['max_defense'], entity['item']['color'])
-            item.defense = entity['item']['defense']
-        elif 'item' in entity:
-            item = Item()
-
-        mob = Mob(entity['x'], entity['y'],
-                  screen_width=engine.scr_wd, screen_height=engine.scr_ht,
-                  char=entity['ch'], color=entity['clr'],
-                  name=entity['name'], stats=stats,
-                  game_map=engine.map, strategy=strat,
-                  is_blocking=bool(entity['is_block']),
-                  entity_type=EntityType(int(entity['type'])),
-                  item=item
-                  )
-
-        mob.stats.owner = mob
-        mob.mv_time = time.time()
-
-        engine.entities.append(mob)
+    return info
 
 
-def deserialize_engine(engine):
+def deserialize_map(data):
+    game_map = Map(data['width'], data['height'],
+                   data['px'], data['py'],
+                   load_type='LOAD')
+
+    game_map.walls_cnt = data['walls_cnt']
+    game_map.cells = [[Cell(bool(cell['is_blocked']),
+                            bool(cell['is_discovered'])) for cell in cells]
+                      for cells in data['cells']
+                      ]
+    game_map.walls = [Wall(wall['x'],
+                           wall['y'],
+                           wall['width'],
+                           wall['height']) for wall in data['walls']
+                      ]
+
+    for wall in game_map.walls:
+        game_map.create_wall(wall)
+
+    return game_map
+
+
+def deserialize_player(data, engine):
+    player = EngineInitializer.init_player(engine)
+
+    player.x = int(data['x'])
+    player.y = int(data['y'])
+    player.color = [int(x) for x in data['clr']]
+    player.main_color = [int(x) for x in data['main_clr']]
+    player.is_blocking = bool(data['is_block'])
+
+    stats = deserialize_stats(data['stats'])
+    if 'armour' in data and data['armour']:
+        stats.armour = deserialize_mob(data['armour'], player.mv_handler)
+
+    player.stats = stats
+    player.stats.owner = player
+
+    if data['inventory']['items']:
+        inventory = deserialize_inventory(data['inventory'])
+        player.inventory = inventory
+        player.inventory.owner = player
+
+    print(player.color)
+
+    return player
+
+
+def deserialize_entities(data):
+    entities = []
+    for entity_stats in data:
+        entities.append(deserialize_mob(entity_stats, None))
+
+    return entities
+
+
+def deserialize_engine(data):
+    info = deserialize_info(data['info'])
+    engine = Engine(info.scr_wd, info.scr_ht)
+    engine.info = info
+
+    engine.map = deserialize_map(data['map'])
+    engine.player = deserialize_player(data['player'], engine)
+    engine.entities = [engine.player, *deserialize_entities(data['entities'])]
+
+    if engine.info.FOV_MODE:
+        engine.fov = EngineInitializer.init_fov(engine)
+        recompute_fov(engine, engine.player.x, engine.player.y, engine.info.fov_radius)
+
+    return engine
+
+
+def load_game(file_path, is_save, scr_wd=80, scr_ht=40, fov_mode=False, debug=False):
     data = []
-    with open('media/GAME_SAVE.json', 'r', encoding='utf-8') as file:
+    with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
 
-    get_engine_from_stats(data['engine'], engine)
-    get_map_from_stats(data['map'], engine)
-    get_player_from_stats(data['player'], engine)
-    get_entities_from_stats(data['entities'], engine)
+    engine = None
+    if is_save:
+        engine = deserialize_engine(data)
+    else:
+        engine = Engine(screen_width=scr_wd, screen_height=scr_ht, fov_mode=fov_mode, debug=debug)
+        engine.map.walls = []
+        engine.map.free_all_cells()
+        for x, y in data['coords']:
+            new_wall = Wall(x, y, 1, 1)
+            engine.map.walls.append(new_wall)
+            engine.map.cells[y][x].block()
 
-    return True
+        engine.player = EngineInitializer.init_player(engine)
+        engine.entities = [engine.player, *EngineInitializer.init_entities(engine)]
+
+    return engine

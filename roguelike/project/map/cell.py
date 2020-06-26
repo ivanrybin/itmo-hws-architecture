@@ -19,3 +19,10 @@ class Cell:
     def unblock(self):
         self.is_blocked = False
         self.is_discovered = True
+
+    def serialize(self):
+        data = {
+            'is_blocked': self.is_blocked,
+            'is_discovered': self.is_discovered
+        }
+        return data

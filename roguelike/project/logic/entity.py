@@ -9,13 +9,7 @@ import numpy as np
 from enum import Enum
 
 from engine.render import RenderOrder
-
-
-def who_blocks(self, mobs, dest_x, dest_y):
-    for mob in mobs:
-        if mob != self and mob.x == dest_x and mob.y == dest_y and mob.stats and mob.is_blocking:
-            return mob
-    return None
+from logic.patterns.strategy import PassiveStrategy
 
 
 class EntityType(Enum):
@@ -29,9 +23,10 @@ class EntityType(Enum):
 
 class Entity:
     def __init__(self, x, y, screen_width, screen_height, char, color, name,
-                 stats=None, game_map=None, strategy=None,
+                 stats=None, game_map=None, strategy=PassiveStrategy,
                  is_blocking=True, render_order=RenderOrder.ALIVE_ENTITY,
-                 item=None, inventory=None, entity_type=None):
+                 item=None, inventory=None, entity_type=None,
+                 move_handler=None):
         self.x = x
         self.y = y
         self.sw = screen_width
@@ -51,29 +46,77 @@ class Entity:
         self.inventory = inventory
         self.type = entity_type
         self.main_color = color
+        self.mv_handler = move_handler
 
         if self.item:
             self.item.owner = self
         if self.inventory:
             self.inventory.owner = self
 
-    def update_pos(self, dx, dy, game_map):
+    def serialize(self):
+        data = {
+            'x': self.x,
+            'y': self.y,
+            'scr_wd': self.sw,
+            "scr_ht": self.sh,
+            'ch': self.char,
+            'clr': self.color,
+            'name': self.name,
+            'strat': self.strategy.__name__,
+            'is_block': self.is_blocking,
+            'render_ord': self.render_order.value,
+            'main_clr': self.main_color,
+            'stats': None,
+            'item': None,
+            'inventory': None,
+            'type': None
+        }
+
+        if self.stats:
+           data['stats'] = self.stats.serialize()
+        if self.item:
+            data['item'] = self.item.serialize()
+        if self.inventory:
+            data['inventory'] = self.inventory.serialize()
+        if self.type:
+            data['type'] = self.type.value
+
+        return data
+
+    def who_blocks(self, mobs, dest_x, dest_y):
+        for mob in mobs:
+            if mob != self and mob.x == dest_x and mob.y == dest_y and mob.stats and mob.is_blocking:
+                return mob
+        return None
+
+    def __update_axis(self, is_x, axis, delta):
+        length = self.sh
+        if is_x:
+            length = self.sw
+
+        if 0 <= axis + delta < length:
+            if is_x:
+                delta = self.x + delta
+            else:
+                delta = self.y + delta
+        elif axis + delta >= length:
+            delta = length - 1
+        elif axis + delta < 0:
+            delta = 0
+
+        if is_x:
+            self.x = delta
+        else:
+            self.y = delta
+
+    def update_pos(self, move_coords, game_map):
+        dx, dy = move_coords
+
         if game_map.is_cell_blocked(self.x + dx, self.y + dy):
             return
 
-        if 0 <= self.x + dx < self.sw:
-            self.x += dx
-        elif self.x + dx >= self.sw:
-            self.x = self.sw - 1
-        elif self.x + dx < 0:
-            self.x = 0
-
-        if 0 <= self.y + dy < self.sh:
-            self.y += dy
-        elif self.y + dy >= self.sh:
-            self.y = self.sh - 1
-        elif self.y + dy < 0:
-            self.y = 0
+        self.__update_axis(True, self.x, dx)
+        self.__update_axis(False, self.y, dy)
 
     def move_to_target(self, target_x, target_y, game_map, mobs):
         dx = target_x - self.x
@@ -83,7 +126,7 @@ class Entity:
         dx = int(dx / dist)
         dy = int(dy / dist)
 
-        other = who_blocks(self, mobs, self.x + dx, self.y + dy)
+        other = self.who_blocks(mobs, self.x + dx, self.y + dy)
         if not game_map.is_cell_blocked(self.x + dx, self.y + dy) and other is None:
             self.update_pos(self.x + dx, self.y + dy)
 

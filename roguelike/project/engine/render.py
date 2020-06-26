@@ -6,12 +6,17 @@ import tcod as tc
 
 from logic.states import State
 from engine.menu import inventory_menu
+from enum import Enum
 
 
-class RenderOrder:
+class RenderOrder(Enum):
     DEAD_ENTITY = 1
     WORLD = 2
     ALIVE_ENTITY = 3
+
+
+def recompute_fov(engine, x, y, radius, light_walls=True, algorithm=0):
+    tc.map_compute_fov(engine.fov, x, y, radius, light_walls, algorithm)
 
 
 def draw_entity(cons, game_map, entity, fov_mode, fov_map):
@@ -54,7 +59,7 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
 
 
 def render_all(cons, bars_cons, player, game_map, entities, screen_width, screen_height, colors, fov_mode,
-               fov_map, msg_log):
+               fov_map, msg_log, curr_state):
     """
     Рисует карту и все объекты на ней, фиксируя текущий FOV.
     """
@@ -76,7 +81,7 @@ def render_all(cons, bars_cons, player, game_map, entities, screen_width, screen
                 else:
                     tc.console_set_char_background(cons, x, y, colors.get('fov_dark_background'), tc.BKGND_SET)
 
-    for entity in sorted(entities, key=lambda ent: ent.render_order):
+    for entity in sorted(entities, key=lambda ent: ent.render_order.value):
         draw_entity(cons, game_map, entity, fov_mode, fov_map)
 
     cons.blit(cons, 0, 0, screen_width, screen_height, 0, 0, 0)
@@ -107,9 +112,9 @@ def render_all(cons, bars_cons, player, game_map, entities, screen_width, screen
     tc.console_blit(bars_cons, 0, 0, 26, 5, cons, 0, 0)
 
     # отрисовка меню
-    if game_map.state == State.SHOWING_MENU:
+    if curr_state.value == State.SHOWING_MENU:
         inventory_menu(cons, 'Choose item via 1,2,3 and/or press Esc to quit.\n',
                        player.inventory, 50, screen_width, screen_height)
-    elif game_map.state == State.DROP_ITEM:
+    elif curr_state.value == State.DROP_ITEM:
         inventory_menu(cons, 'Drop item via 1,2,3 and/or press Esc to quit.\n',
                        player.inventory, 50, screen_width, screen_height)

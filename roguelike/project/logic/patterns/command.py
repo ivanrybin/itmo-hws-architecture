@@ -16,7 +16,3 @@ class Command:
 
     def execute(self):
         return self.func(*self.args, **self.kwargs)
-
-
-def identity(args):
-    return args

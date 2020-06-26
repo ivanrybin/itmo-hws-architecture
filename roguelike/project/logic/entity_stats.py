@@ -5,7 +5,7 @@
 import time
 import tcod as tc
 
-from logic.logger import Message
+from logic.logger import Message, OperationLog
 from logic.entity import EntityType
 
 
@@ -19,8 +19,23 @@ class EntityStats:
         self.owner = owner
         self.mv_time = time.time()
         self.mv_wait = 0.2
-        self.intox_start_time = None
         self.armour = None
+
+    def serialize(self):
+        data = {
+            'hp': self.hp,
+            'max_hp': self.max_hp,
+            'force': self.force,
+            'defense': self.defense,
+            'max_def': self.max_defense,
+            'is_player': False,
+            'armour': None,
+        }
+        if self.armour:
+            data['is_player'] = True
+            data['armour'] = self.armour.serialize()
+
+        return data
 
     def increase_hp(self, delta):
         self.hp += delta
@@ -28,7 +43,8 @@ class EntityStats:
             self.hp = self.max_hp
 
     def decrease_hp(self, delta):
-        info = []
+        operation_log = OperationLog()
+
         if self.armour and self.armour.item.defense > 0:
             self.armour.item.defense -= delta
             if self.armour.item.defense <= 0:
@@ -36,7 +52,7 @@ class EntityStats:
                 self.owner.color = self.owner.main_color
                 self.max_defense -= self.armour.item.max_defense
 
-                info.append({'message': Message('Armour destroyed.', self.armour.item.color)})
+                operation_log.add_item({'message': Message('Armour destroyed.', self.armour.item.color)})
                 self.armour = None
             else:
                 delta = 0
@@ -52,20 +68,22 @@ class EntityStats:
         self.hp -= delta
 
         if self.hp <= 0:
-            info.append({'dead': self.owner})
+            operation_log.add_item({'dead': self.owner})
 
-        return info
+        return operation_log
 
     def attack_target(self, target):
-        info = []
+        operation_log = OperationLog()
+
         if not target.stats:
-            return info
+            return operation_log
 
         damage = self.force
 
         if damage > 0:
             if target.type not in [EntityType.HEALTH_PTN, EntityType.INTOX_PTN]:
-                info.append({'message': Message(f'{self.owner.name} damaged {target.name} in {damage} hps.',
-                                                tc.white)})
-                info.extend(target.stats.decrease_hp(damage))
-        return info
+                operation_log.add_item({'message': Message(f'{self.owner.name} damaged {target.name} in {damage} hps.',
+                                                           tc.white)})
+                operation_log.log.extend(target.stats.decrease_hp(damage).log)
+
+        return operation_log

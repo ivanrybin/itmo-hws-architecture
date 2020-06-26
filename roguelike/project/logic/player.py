@@ -1,69 +1,45 @@
 """
     Player реализация сущности игрока.
 """
+import time
+import tcod as tc
 
-from logic.entity import *
+from logic.entity import Entity, EntityType
 from logic.logger import Message
-from logic.states import State
-from logic.patterns.decorator import intoxicating_deco
+from logic.logger import OperationLog
 
 
 class Player(Entity):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.mv_types = {'LEFT': (-1, 0), 'RIGHT': (1, 0),
-                         'UP': (0, -1), 'DOWN': (0, 1)}
 
     def pick_item(self, item):
-        info = []
+        operation_log = OperationLog()
 
         if item.type == EntityType.HEALTH_PTN:
-            info.append({'message': Message('+5 HP potion!', tc.green)})
+            operation_log.add_item({'message': Message(f'+{item.item.hp_up} HP potion!', tc.green)})
             self.stats.increase_hp(5)
             self.inventory.del_item(item)
 
         elif item.type == EntityType.INTOX_PTN:
-            info.append({'message': Message('You\'re intoxicated', tc.fuchsia)})
-            if self.stats.intox_start_time:
-                self.stats.intox_start_time += 7
+            operation_log.add_item({'message': Message('You\'re intoxicated!', tc.fuchsia)})
+            if self.mv_handler.intox_start_time:
+                self.mv_handler.intox_start_time += item.item.intox_time
             else:
-                self.stats.intox_start_time = time.time()
+                self.mv_handler.set_intox_start_time(time.time())
 
             self.inventory.del_item(item)
-            intoxicating_deco(self)
+            # intoxicating_deco(self)
 
-        return info
+        return operation_log
 
-    def get_item(self, game_map, entities):
-        info = []
+    def get_item(self, entities):
+        operation_log = OperationLog()
+
         for entity in entities:
             if entity.x == self.x and entity.y == self.y and \
                     entity.type in [EntityType.HEALTH_PTN, EntityType.INTOX_PTN, EntityType.ARMOUR]:
-                info = self.inventory.add_item(entity)
+                operation_log = self.inventory.add_item(entity)
                 break
 
-        return info
-
-    @staticmethod
-    def move(self, move, game_map, mobs):
-
-        if game_map.state != State.PLAYER_TURN:
-            return []
-
-        dx, dy = self.mv_types[move]
-
-        if game_map.is_cell_blocked(self.x + dx, self.y + dy):
-            return []
-
-        victim = who_blocks(self, mobs[1:], self.x + dx, self.y + dy)
-
-        if victim:
-            return self.stats.attack_target(victim)
-        else:
-            self.update_pos(dx, dy, game_map)
-
-        game_map.state = State.MOB_TURN
-
-        print(self.x, self.y)
-
-        return []
+        return operation_log
