@@ -3,6 +3,7 @@
 """
 
 import random as rnd
+
 from logic.entity import Entity
 
 

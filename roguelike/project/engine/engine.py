@@ -12,13 +12,14 @@ import os
 import engine.render as rr
 
 # logic
-from engine.engine_initializer import EngineInitializer, EngineInfo
+from engine.engine_initializer import EngineInitializer, EngineInfo, EngineLoadTypes
 from engine.keys_handler import KeysHandler
+from logic.patterns.command import Command
 from logic.player import Player
 from logic.states import State, StateHolder
 from logic.killer import kill_player, kill_mob
 from logic.inventory import *
-
+from test import EngineTester
 
 colors = {'fov_dark_walls': tc.Color(0, 5, 90),
           'fov_dark_background': tc.Color(45, 45, 140),
@@ -40,22 +41,25 @@ def save_game(engine):
 
 class Engine:
     def __init__(self, screen_width=80, screen_height=40, fov_mode=False, debug=False, player_lvl=1,
-                 load_type='NORMAL'):
+                 load_type=EngineLoadTypes.NORMAL, tester=None):
         # состояние игры
         self.IS_GAME = True
+        self.load_type = load_type
         self.curr_state = StateHolder(State.PLAYER_TURN)
         self.prev_state = StateHolder(State.PLAYER_TURN)
-        if load_type == 'LOAD':
+        if load_type == EngineLoadTypes.LOAD:
             return
         # держатель всех характеристик
         self.info = EngineInfo(screen_width, screen_height, player_lvl, fov_mode, debug)
         # инициализация среды
-        self.map = EngineInitializer.init_map(self)
-        self.player = EngineInitializer.init_player(self)
-        self.entities = [self.player, *EngineInitializer.init_entities(self)]
+        self.map = EngineInitializer.init_map(self, load_type)
+        self.player = EngineInitializer.init_player(self, load_type)
+        self.entities = [self.player, *EngineInitializer.init_entities(self, load_type)]
         self.fov = None
         if fov_mode:
             self.fov = EngineInitializer.init_fov(self)
+        if load_type == EngineLoadTypes.TEST:
+            self.tester = tester
 
     def serialize(self):
         data = {
@@ -66,8 +70,18 @@ class Engine:
         }
         return data
 
+    @staticmethod
+    def stop_engine(engine):
+        engine.IS_GAME = False
+        engine.curr_state = State.PLAYER_DEAD
+        return OperationLog([{'message': Message('ENGINE WAS STOPPED.', tc.yellow)}])
+
     def player_turn(self):
-        command = KeysHandler.user_input(self)
+        command = None
+        if self.load_type == EngineLoadTypes.TEST:
+            command = self.tester.get_command(self)
+        elif self.load_type in [EngineLoadTypes.LOAD, EngineLoadTypes.NORMAL]:
+            command = KeysHandler.user_input(self)
         # паттерн команда
         operation_log = command.execute()
         # логгирование в консоль
@@ -157,6 +171,9 @@ class Engine:
             if self.curr_state.value != State.PLAYER_DEAD:
                 self.curr_state.value = State.PLAYER_TURN
 
+    def stop(self):
+        self.IS_GAME = False
+
     def run(self):
         # подгрузка шрифта
         tc.console_set_custom_font(self.info.FONT_PATH, tc.FONT_TYPE_GREYSCALE | tc.FONT_LAYOUT_TCOD)
@@ -183,9 +200,9 @@ class Engine:
                 self.mob_turn()
 
         # если игрок не мертв и мы вышли - сохраняем игру
-        if self.curr_state.value != State.PLAYER_DEAD:
+        if self.curr_state.value != State.PLAYER_DEAD and self.load_type != EngineLoadTypes.TEST:
             save_game(self)
-        else:
+        elif self.load_type != EngineLoadTypes.TEST:
             # удаляем сохранение при смерти
             if os.path.isfile('media/GAME_SAVE.json'):
                 os.remove('media/GAME_SAVE.json')

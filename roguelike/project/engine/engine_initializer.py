@@ -16,6 +16,12 @@ from logic.inventory import *
 from map.game_map import Map
 
 
+class EngineLoadTypes(Enum):
+    NORMAL = 1
+    LOAD = 2
+    TEST = 3
+
+
 class EngineInfo:
     def __init__(self, screen_width, screen_height, player_lvl, fov_mode, debug):
         self.scr_wd = int(screen_width)
@@ -53,17 +59,19 @@ class EngineInfo:
 
 class EngineInitializer:
     @staticmethod
-    def init_map(engine):
+    def init_map(engine, load_type):
         game_map = Map(engine.info.scr_wd,
                        engine.info.scr_ht,
                        int(engine.info.scr_wd * 0.03),
                        int(engine.info.scr_ht * 0.14))
 
-        game_map.create_walls()
+        if load_type == EngineLoadTypes.NORMAL:
+            game_map.create_walls()
+
         return game_map
 
     @staticmethod
-    def init_player(engine):
+    def init_player(engine, load_type):
         lvl = engine.info.player_lvl
         stats = EntityStats(hp=10 * lvl, force=2 * lvl, defense=2 * lvl)
         player = Player(int(engine.info.scr_wd * 0.03),
@@ -122,7 +130,14 @@ class EngineInitializer:
         return item
 
     @staticmethod
-    def init_entities(engine):
+    def init_test_entities(engine):
+        return []
+
+    @staticmethod
+    def init_entities(engine, load_type):
+        if load_type == EngineLoadTypes.TEST:
+            return EngineInitializer.init_test_entities(engine)
+
         lvl = engine.info.player_lvl
         # генерация мобов
         mobs = []

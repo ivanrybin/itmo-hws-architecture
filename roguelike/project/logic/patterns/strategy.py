@@ -28,8 +28,7 @@ class AggressiveStrategy:
     def act(self, target, fov_map, game_map, mobs):
         operation_log = OperationLog()
 
-        if tc.map_is_in_fov(fov_map, self.x, self.y):
-
+        if not fov_map or tc.map_is_in_fov(fov_map, self.x, self.y):
             if AggressiveStrategy.min_dist_from_target <= self.get_dist(target) \
                     <= AggressiveStrategy.max_dist_from_target:
                 self.move_astar(target, game_map, mobs)
@@ -48,7 +47,7 @@ class CowardStrategy:
     def act(self, target, fov_map, game_map, mobs):
         operation_log = OperationLog()
 
-        if tc.map_is_in_fov(fov_map, self.x, self.y):
+        if not fov_map or tc.map_is_in_fov(fov_map, self.x, self.y):
 
             dist = self.get_dist(target)
             if CowardStrategy.min_dist_from_target <= dist <= CowardStrategy.max_dist_from_target:

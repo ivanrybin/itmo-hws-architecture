@@ -73,7 +73,7 @@ class Entity:
         }
 
         if self.stats:
-           data['stats'] = self.stats.serialize()
+            data['stats'] = self.stats.serialize()
         if self.item:
             data['item'] = self.item.serialize()
         if self.inventory:
@@ -131,7 +131,7 @@ class Entity:
             self.update_pos(self.x + dx, self.y + dy)
 
     def move_astar(self, target, game_map, mobs):
-        if time.time() - self.stats.mv_time < self.stats.mv_wait:
+        if not self.stats or time.time() - self.stats.mv_time < self.stats.mv_wait:
             return
 
         self.stats.mv_time = time.time()

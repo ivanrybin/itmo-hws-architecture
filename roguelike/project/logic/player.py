@@ -29,7 +29,6 @@ class Player(Entity):
                 self.mv_handler.set_intox_start_time(time.time())
 
             self.inventory.del_item(item)
-            # intoxicating_deco(self)
 
         return operation_log
 
