@@ -293,7 +293,7 @@ static void grep_cmd_test() {
 
         sin << "grep -A pattern abc.xyz" << "\n";
         test_t.run();
-        assert("grep: pattern: Неверный аргумент длины контекста\n" == serr.str());
+        assert("grep: bad_context: Неверный аргумент длины контекста\n" == serr.str());
         clear_streams(sin, sout, serr);
 
         sin << "grep -x pattern abc.xyz" << "\n";
