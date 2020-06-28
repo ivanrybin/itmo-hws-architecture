@@ -3,23 +3,18 @@
     Через него происходят все операции, связанные с логикой и механикой игры.
 """
 
-import tcod as tc
-import random as rnd
 import json
 import os
 
 # render
-import engine.render as rr
-
+from engine.render import Render, RenderOrder
 # logic
 from engine.engine_initializer import EngineInitializer, EngineInfo, EngineLoadTypes
 from engine.keys_handler import KeysHandler
-from logic.patterns.command import Command
+from logic.inventory import *
+from logic.killer import kill_player, kill_mob
 from logic.player import Player
 from logic.states import State, StateHolder
-from logic.killer import kill_player, kill_mob
-from logic.inventory import *
-from test import EngineTester
 
 colors = {'fov_dark_walls': tc.Color(0, 5, 90),
           'fov_dark_background': tc.Color(45, 45, 140),
@@ -184,16 +179,16 @@ class Engine:
             while self.IS_GAME:
                 # режим открытия карты
                 if self.info.FOV_MODE:
-                    rr.recompute_fov(self, self.player.x, self.player.y, self.info.fov_radius)
+                    Render.recompute_fov(self, self.player.x, self.player.y, self.info.fov_radius)
                 # отрисовка сущностей
-                rr.render_all(root_console, self.info.BARS_CONS, self.player,
-                              self.map, self.entities,
-                              self.info.scr_wd, self.info.scr_ht, colors,
-                              self.info.FOV_MODE, self.fov, self.info.msg_log, self.curr_state)
+                Render.render_all(root_console, self.info.BARS_CONS, self.player,
+                                  self.map, self.entities,
+                                  self.info.scr_wd, self.info.scr_ht, colors,
+                                  self.info.FOV_MODE, self.fov, self.info.msg_log, self.curr_state)
                 # вывод консоли
                 tc.console_flush()
                 # удаление предыдущих позиций
-                rr.clear_all(root_console, self.entities)
+                Render.clear_all(root_console, self.entities)
                 # ход игрока
                 self.player_turn()
                 # ход мобов

@@ -5,6 +5,7 @@ from logic.entity_stats import EntityStats
 from logic.mob import Mob
 from logic.move import MoveType
 from logic.patterns.strategy import PassiveStrategy
+from logic.patterns.command import Command
 
 
 class EngineTester:
@@ -92,7 +93,7 @@ class EngineTester:
                    screen_width=engine.info.scr_wd, screen_height=engine.info.scr_ht,
                    char=203, color=tc.light_blue, name="test item",
                    stats=EntityStats(*(0, 0, 0)), game_map=engine.map,
-                   strategy=PassiveStrategy, item=Item(),
+                   strategy=PassiveStrategy(), item=Item(tc.light_blue, item_type),
                    is_blocking=False, entity_type=item_type)
         if item_type == EntityType.ARMOUR:
             item.item = Armour(5, item.color)

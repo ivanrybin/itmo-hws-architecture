@@ -16,20 +16,16 @@ class ItemType(Enum):
 
 
 class Item:
-    def __init__(self):
-        pass
-
-    def serialize(self):
-        return dict()
+    def __init__(self, color, type):
+        self.color = color
+        self.type = type
 
 
 class Armour(Item):
     def __init__(self, defense=5, color=tc.dark_blue, arm_type=ItemType.ARMOUR_I):
-        super().__init__()
+        super().__init__(color, arm_type)
         self.defense = defense
         self.max_defense = defense
-        self.color = color
-        self.type = arm_type
 
     def serialize(self):
         data = {
@@ -43,10 +39,8 @@ class Armour(Item):
 
 class HealthPotion(Item):
     def __init__(self, health_up=5, color=tc.light_sea):
-        super().__init__()
+        super().__init__(color, ItemType.HP_PTN)
         self.hp_up = health_up
-        self.color = color
-        self.type = ItemType.HP_PTN
 
     def serialize(self):
         data = {
@@ -59,10 +53,8 @@ class HealthPotion(Item):
 
 class IntoxPotion(Item):
     def __init__(self, intox_time=5, color=tc.light_violet):
-        super().__init__()
+        super().__init__(color, ItemType.INTOX_PTN)
         self.intox_time = intox_time
-        self.color = color
-        self.type = ItemType.INTOX_PTN
 
     def serialize(self):
         data = {
@@ -91,7 +83,7 @@ class Inventory:
 
         if len(self.items) >= self.maxsize:
             operation_log.add_item({'new_item': None,
-                                   'message': Message('Inventory is full.', tc.yellow)})
+                                    'message': Message('Inventory is full.', tc.yellow)})
         else:
             operation_log.add_item({'new_item': item_entity,
                                     'message': Message(f'New item {item_entity.name}!', tc.light_azure)})

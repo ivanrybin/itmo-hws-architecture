@@ -23,7 +23,7 @@ class EntityType(Enum):
 
 class Entity:
     def __init__(self, x, y, screen_width, screen_height, char, color, name,
-                 stats=None, game_map=None, strategy=PassiveStrategy,
+                 stats=None, game_map=None, strategy=PassiveStrategy(),
                  is_blocking=True, render_order=RenderOrder.ALIVE_ENTITY,
                  item=None, inventory=None, entity_type=None,
                  move_handler=None):
@@ -62,7 +62,7 @@ class Entity:
             'ch': self.char,
             'clr': self.color,
             'name': self.name,
-            'strat': self.strategy.__name__,
+            'strat': self.strategy.__class__.__name__,
             'is_block': self.is_blocking,
             'render_ord': self.render_order.value,
             'main_clr': self.main_color,

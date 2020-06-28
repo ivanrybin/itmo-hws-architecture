@@ -1,17 +1,14 @@
-import tcod as tc
-
 import random as rnd
 
-# logic
-from logic.logger import MessageLog
-from logic.patterns.decorator import MoveDeco
-from logic.player import Player
-from logic.mob import Mob
-from logic.patterns.strategy import *
-from logic.move import MoveType, MoveHandler
 from logic.entity_stats import EntityStats
 from logic.inventory import *
-
+# logic
+from logic.logger import MessageLog
+from logic.mob import Mob
+from logic.move import MoveHandler
+from logic.patterns.decorator import MoveDeco
+from logic.patterns.strategy import *
+from logic.player import Player
 # map
 from map.game_map import Map
 
@@ -114,7 +111,7 @@ class EngineInitializer:
                    char=item_ch, color=item_clr,
                    name=item_name, stats=EntityStats(*item_stat),
                    game_map=engine.map, strategy=item_strat,
-                   item=Item(), is_blocking=False,
+                   item=Item(item_clr, item_real_t), is_blocking=False,
                    entity_type=item_real_t)
 
         if item_type == ItemType.ARMOUR_I:
@@ -146,9 +143,9 @@ class EngineInitializer:
                      (0.2, 0.6): 'passive',
                      (1, 1): 'aggressive'}
         # символ, цвет, стратегия моба
-        mob_types = {'passive': (205, tc.dark_green, 'Cow', PassiveStrategy),
-                     'aggressive': (206, tc.dark_flame, 'Aggr', AggressiveStrategy),
-                     'coward': (197, tc.light_cyan, 'Aaaa', CowardStrategy)}
+        mob_types = {'passive': (205, tc.dark_green, 'Cow', PassiveStrategy()),
+                     'aggressive': (206, tc.dark_flame, 'Aggr', AggressiveStrategy()),
+                     'coward': (197, tc.light_cyan, 'Aaaa', CowardStrategy())}
         # характеристика мобов: здоровье, сила, защита
         mob_stats = {'passive': (5 * lvl, 0, lvl),
                      'aggressive': (3 * lvl, 3 * lvl, 2 * lvl),
@@ -176,13 +173,13 @@ class EngineInitializer:
                        (0.6, 0.8): ItemType.ARMOUR_II}
 
         items_types = {ItemType.HP_PTN:
-                           (24, tc.light_sea, 'healing potion', PassiveStrategy, EntityType.HEALTH_PTN),
+                           (24, tc.light_sea, 'healing potion', PassiveStrategy(), EntityType.HEALTH_PTN),
                        ItemType.INTOX_PTN:
-                           (25, tc.light_violet, 'intoxicating potion', PassiveStrategy, EntityType.INTOX_PTN),
+                           (25, tc.light_violet, 'intoxicating potion', PassiveStrategy(), EntityType.INTOX_PTN),
                        ItemType.ARMOUR_I:
-                           (203, tc.light_blue, 'ARMOUR I', PassiveStrategy, EntityType.ARMOUR),
+                           (203, tc.light_blue, 'ARMOUR I', PassiveStrategy(), EntityType.ARMOUR),
                        ItemType.ARMOUR_II:
-                           (203, tc.light_yellow, 'ARMOUR II', PassiveStrategy, EntityType.ARMOUR)}
+                           (203, tc.light_yellow, 'ARMOUR II', PassiveStrategy(), EntityType.ARMOUR)}
 
         items_stats = {ItemType.HP_PTN: (0, 0, 0),
                        ItemType.INTOX_PTN: (0, 0, 0),

@@ -25,3 +25,5 @@ class Mob(Entity):
 
             if not_in_wall_respawn:
                 break
+
+

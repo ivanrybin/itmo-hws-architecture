@@ -2,13 +2,10 @@
     Map реализует игровую карту.
 """
 
-from map.cell import Cell
-from map.room import Room
-from map.wall import Wall
-
-from logic.states import State
-
 import random as rnd
+
+from map.cell import Cell
+from map.room import Wall
 
 
 class Map:
@@ -18,7 +15,7 @@ class Map:
         self.px = player_start_x
         self.py = player_start_y
         self.walls = []
-        self.rooms = [Room(self.px - 5, self.py - 5, 10, 10)]
+        self.rooms = [Wall(self.px - 5, self.py - 5, 10, 10)]
         if load_type == 'LOAD':
             return
         self.walls_cnt = rnd.randint(5, 10)
@@ -43,8 +40,8 @@ class Map:
         return cells
 
     def create_wall(self, wall):
-        for x in range(max(0, min(wall.x1, self.wd)), max(0, min(wall.x2, self.wd))):
-            for y in range(max(0, min(wall.y1, self.ht)), max(0, min(wall.y2, self.ht))):
+        for x in range(max(0, min(wall.x_left, self.wd)), max(0, min(wall.x_right, self.wd))):
+            for y in range(max(0, min(wall.y_bottom, self.ht)), max(0, min(wall.y_top, self.ht))):
                 self.cells[x][y].block()
 
     def create_walls(self, with_intersection=False):
