@@ -1,8 +1,8 @@
-### Домашнее задание #8, 10, 11. Roguelike.
+### Домашнее задание #6, 8, 10, 11. Roguelike.
 
 ![](https://github.com/ivanrybin/itmo-hws-architecture/blob/roguelike/roguelike/game_screenshot.png)
 
-![Диздок по ссылке](https://github.com/ivanrybin/itmo-hws-architecture/blob/roguelike/roguelike/%D0%B4%D0%B8%D0%B7%D0%B4%D0%BE%D0%BA/DOC.md)
+![Диздок по ссылке](https://github.com/ivanrybin/itmo-hws-architecture/tree/roguelike/roguelike/design%20document)
 
 ### Описание
 Запуск через файл: `main.py`
@@ -67,7 +67,7 @@
 HW 8:
 - [X] консольная графика
 - [X] персонаж перемещается по карте
-- [X] карта случайно генерируется
+- [X] карта случайно генерируется или загружается
 
 HW 10:
 - [X] несколько разных видов мобов, различающихся характеристиками и поведением
@@ -81,7 +81,7 @@ HW 11:
 - [X] поддержка сохранения и загрузки состояния игры 
 - [X] паттерн "Команда" - взаимодействие с пользователем
 
-- [X] ![диздок](https://github.com/ivanrybin/itmo-hws-architecture/blob/roguelike/roguelike/%D0%B4%D0%B8%D0%B7%D0%B4%D0%BE%D0%BA/DOC.md)
+- [X] ![диздок](https://github.com/ivanrybin/itmo-hws-architecture/tree/roguelike/roguelike/design%20document)
 
 
 ### Заимствования
