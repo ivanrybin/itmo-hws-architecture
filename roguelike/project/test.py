@@ -89,11 +89,11 @@ class EngineTester:
 
     @staticmethod
     def __item_for_pick(_, engine, item_type=EntityType.ARMOUR):
-        item = Mob(engine.player.x + 1, engine.player.y, load_type='TEST',
+        item = Mob(Item(tc.light_blue, item_type), engine.player.x + 1, engine.player.y, load_type='TEST',
                    screen_width=engine.info.scr_wd, screen_height=engine.info.scr_ht,
                    char=203, color=tc.light_blue, name="test item",
                    stats=EntityStats(*(0, 0, 0)), game_map=engine.map,
-                   strategy=PassiveStrategy(), item=Item(tc.light_blue, item_type),
+                   strategy=PassiveStrategy(),
                    is_blocking=False, entity_type=item_type)
         if item_type == EntityType.ARMOUR:
             item.item = Armour(5, item.color)

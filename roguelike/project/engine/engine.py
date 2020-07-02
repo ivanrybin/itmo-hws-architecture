@@ -121,6 +121,9 @@ class Engine:
 
             if is_index is not None and is_index >= 0 and \
                     self.prev_state.value != State.PLAYER_DEAD:
+                if is_index >= len(self.player.inventory.items):
+                    operation_log.add_item({'message': Message('Wrong item index.', tc.yellow)})
+                    continue
                 item = self.player.inventory.items[is_index]
                 if self.curr_state.value == State.SHOWING_MENU:
                     operation_log.log.extend(self.player.inventory.activate_item(item).log)
