@@ -11,12 +11,7 @@ from logic.patterns.strategy import *
 from logic.player import Player
 # map
 from map.game_map import Map
-
-
-class EngineLoadTypes(Enum):
-    NORMAL = 1
-    LOAD = 2
-    TEST = 3
+from engine.engine_load_types import EngineLoadTypes
 
 
 class EngineInfo:
@@ -71,13 +66,13 @@ class EngineInitializer:
     def init_player(engine, load_type):
         lvl = engine.info.player_lvl
         stats = EntityStats(hp=10 * lvl, force=2 * lvl, defense=2 * lvl)
-        player = Player(int(engine.info.scr_wd * 0.03),
+        player = Player(Inventory(3),
+                        int(engine.info.scr_wd * 0.03),
                         int(engine.info.scr_ht * 0.14),
                         screen_width=engine.info.scr_wd,
                         screen_height=engine.info.scr_ht,
                         char=203, color=tc.white, name='Bob',
                         stats=stats,
-                        inventory=Inventory(3),
                         entity_type=EntityType.PLAYER)
 
         player.mv_handler = MoveDeco(MoveHandler(player))
@@ -90,7 +85,7 @@ class EngineInitializer:
         mob_type = mob_probs[(left_prob, right_prob)]
         mob_char, mob_colr, mob_name, mob_strat = mob_types[mob_type]
         mob_stat = mob_stats[mob_type]
-        mob = Mob(None, None,
+        mob = Mob(None, None, None,
                   screen_width=engine.info.scr_wd,
                   screen_height=engine.info.scr_ht,
                   char=mob_char, color=mob_colr,
@@ -106,12 +101,12 @@ class EngineInitializer:
         item_type = items_probs[(left_prob, right_prob)]
         item_ch, item_clr, item_name, item_strat, item_real_t = items_types[item_type]
         item_stat = items_stats[item_type]
-        item = Mob(None, None,
+        item = Mob(Item(item_clr, item_real_t), None, None,
                    screen_width=engine.info.scr_wd, screen_height=engine.info.scr_ht,
                    char=item_ch, color=item_clr,
                    name=item_name, stats=EntityStats(*item_stat),
                    game_map=engine.map, strategy=item_strat,
-                   item=Item(item_clr, item_real_t), is_blocking=False,
+                   is_blocking=False,
                    entity_type=item_real_t)
 
         if item_type == ItemType.ARMOUR_I:

@@ -15,12 +15,11 @@ def kill_player(player):
     player.char = ord('X')
     player.color = tc.darker_fuchsia
 
-    return Message("You're DEAD. GAME OVER", tc.dark_red), State.PLAYER_DEAD
+    return Message("You're DEAD. GAME OVER", tc.dark_red)
 
 
 def kill_mob(mob):
     name = mob.name
-
     mob.char = ord('#')
     mob.color = tc.dark_grey
     mob.is_blocking = False
@@ -38,6 +37,12 @@ def kill_mob(mob):
         return Message('', tc.fuchsia), State.INTOXICATE
 
     if name == 'Aggr':
-        return True, Message(f'{name} is dead!', tc.yellow), State.PLAYER_TURN
+        return Message(f'{name} is dead!', tc.yellow)
 
-    return False, Message(f'{name} is dead!', tc.yellow), State.PLAYER_TURN
+    return Message(f'{name} is dead!', tc.yellow)
+
+
+
+
+
+

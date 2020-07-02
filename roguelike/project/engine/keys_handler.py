@@ -51,17 +51,13 @@ class KeysHandler:
                         engine.IS_GAME = False
                 if engine.curr_state.value != State.PLAYER_DEAD:
                     if event.sym == tc.event.K_UP:
-                        return Command(engine.player.mv_handler.move, MoveType.UP,
-                                       engine.map, engine.entities, engine.curr_state)
+                        return KeysHandler.create_command(engine, MoveType.UP)
                     if event.sym == tc.event.K_DOWN:
-                        return Command(engine.player.mv_handler.move, MoveType.DOWN,
-                                       engine.map, engine.entities, engine.curr_state)
+                        return KeysHandler.create_command(engine, MoveType.DOWN)
                     if event.sym == tc.event.K_LEFT:
-                        return Command(engine.player.mv_handler.move, MoveType.LEFT,
-                                       engine.map, engine.entities, engine.curr_state)
+                        return KeysHandler.create_command(engine, MoveType.LEFT)
                     if event.sym == tc.event.K_RIGHT:
-                        return Command(engine.player.mv_handler.move, MoveType.RIGHT,
-                                       engine.map, engine.entities, engine.curr_state)
+                        return KeysHandler.create_command(engine, MoveType.RIGHT)
                     if event.sym == tc.event.K_g:
                         return Command(engine.player.get_item, engine.entities)
                     if event.sym == tc.event.K_i:
@@ -80,3 +76,8 @@ class KeysHandler:
                         return Command(lambda arg: arg, OperationLog([{'drop_menu': True}]))
 
         return Command(lambda arg: arg, OperationLog())
+
+    @staticmethod
+    def create_command(engine, move_type):
+        return Command(engine.player.mv_handler.move, move_type,
+                       engine.map, engine.entities, engine.curr_state)

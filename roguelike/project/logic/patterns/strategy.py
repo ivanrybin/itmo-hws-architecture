@@ -12,10 +12,10 @@ import tcod as tc
 
 from logic.logger import OperationLog
 from logic.move import MoveCoords
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 
 
-class Strategy:
+class Strategy(ABC):
 
     @abstractmethod
     def act(self, *args, **kwargs):

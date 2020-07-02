@@ -7,11 +7,14 @@ import tcod as tc
 from logic.entity import Entity, EntityType
 from logic.logger import Message
 from logic.logger import OperationLog
+from logic.killer import kill_player
 
 
 class Player(Entity):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, inventory, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.inventory = inventory
+        self.inventory.owner = self
 
     def pick_item(self, item):
         operation_log = OperationLog()
@@ -38,7 +41,41 @@ class Player(Entity):
         for entity in entities:
             if entity.x == self.x and entity.y == self.y and \
                     entity.type in [EntityType.HEALTH_PTN, EntityType.INTOX_PTN, EntityType.ARMOUR]:
-                operation_log = self.inventory.add_item(entity)
+                operation_log = OperationLog()
+                if not self.inventory.add_item(entity):
+                    operation_log.add_item({'new_item': None,
+                                            'message': Message('Inventory is full.', tc.yellow)})
+                else:
+                    operation_log.add_item({'new_item': entity,
+                                            'message': Message(f'New item {entity.name}!', tc.light_azure)})
                 break
 
         return operation_log
+
+    def serialize(self):
+        data = {
+            'x': self.x,
+            'y': self.y,
+            'scr_wd': self.sw,
+            "scr_ht": self.sh,
+            'ch': self.char,
+            'clr': self.color,
+            'name': self.name,
+            'is_block': self.is_blocking,
+            'render_ord': self.render_order.value,
+            'main_clr': self.main_color,
+            'stats': None,
+            'item': None,
+            'inventory': self.inventory.serialize(),
+            'type': None
+        }
+
+        if self.stats:
+            data['stats'] = self.stats.serialize()
+        if self.type:
+            data['type'] = self.type.value
+
+        return data
+
+    def die(self):
+        return kill_player(self)

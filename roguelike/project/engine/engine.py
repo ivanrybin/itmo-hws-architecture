@@ -15,6 +15,7 @@ from logic.inventory import *
 from logic.killer import kill_player, kill_mob
 from logic.player import Player
 from logic.states import State, StateHolder
+from logic.patterns.strategy import AggressiveStrategy
 
 colors = {'fov_dark_walls': tc.Color(0, 5, 90),
           'fov_dark_background': tc.Color(45, 45, 140),
@@ -57,10 +58,11 @@ class Engine:
             self.tester = tester
 
     def serialize(self):
+        _, *mobs = self.entities
         data = {
             "info": self.info.serialize(),
             "player": self.player.serialize(),
-            "entities": [e.serialize() for e in self.entities[1:]],
+            "entities": [m.serialize() for m in mobs],
             "map": self.map.serialize()
         }
         return data
@@ -71,107 +73,120 @@ class Engine:
         engine.curr_state = State.PLAYER_DEAD
         return OperationLog([{'message': Message('ENGINE WAS STOPPED.', tc.yellow)}])
 
-    def player_turn(self):
+    def get_command(self):
         command = None
         if self.load_type == EngineLoadTypes.TEST:
             command = self.tester.get_command(self)
         elif self.load_type in [EngineLoadTypes.LOAD, EngineLoadTypes.NORMAL]:
             command = KeysHandler.user_input(self)
-        # паттерн команда
+        return command
+
+    def player_turn(self):
+        command = self.get_command()
         operation_log = command.execute()
+
         # логгирование в консоль
-        if operation_log.log:
+        for item in operation_log.log:
+            message = item.get('message')
+            maybe_dead_entity = item.get('dead')
+            picked_item = item.get('new_item')
+            is_menu_key = item.get('show_menu')
+            is_drop_meny_key = item.get('drop_menu')
+            is_index = item.get('inv_index')
+            is_drop = item.get('drop_item')
+
+            if message:
+                self.info.msg_log.add_message(message)
+
+            if maybe_dead_entity:
+                message = maybe_dead_entity.die()
+                if isinstance(maybe_dead_entity, Player):
+                    self.curr_state.value = State.PLAYER_DEAD
+                else:
+                    if isinstance(maybe_dead_entity.strategy, AggressiveStrategy):
+                        self.info.killed_on_lvl += 1
+                self.info.msg_log.add_message(message)
+
+            if picked_item:
+                operation_log.log.extend(self.player.pick_item(picked_item).log)
+                self.entities.remove(picked_item)
+
+            if is_menu_key:
+                self.prev_state.value = self.curr_state.value
+                self.curr_state.value = State.SHOWING_MENU
+
+            if is_drop_meny_key:
+                self.prev_state.value = self.curr_state.value
+                self.curr_state.value = State.DROP_ITEM
+
+            if is_index is not None and is_index >= 0 and \
+                    self.prev_state.value != State.PLAYER_DEAD:
+                item = self.player.inventory.items[is_index]
+                if self.curr_state.value == State.SHOWING_MENU:
+                    operation_log.log.extend(self.player.inventory.activate_item(item).log)
+                elif self.curr_state.value == State.DROP_ITEM:
+                    operation_log.log.extend(
+                        self.player.inventory.drop_item(self.entities, item).log)
+
+            if is_drop:
+                self.prev_state.value = self.curr_state.value
+                self.curr_state.value = State.DROP_ITEM
+
+            if self.info.killed_on_lvl >= 3:
+                self.__init__(self.info.scr_wd,
+                              self.info.scr_ht,
+                              fov_mode=self.info.FOV_MODE,
+                              debug=self.info.DEBUG,
+                              player_lvl=self.info.player_lvl + 1)
+                continue
+
+
+
+    def mob_turn(self):
+        if self.curr_state.value != State.MOB_TURN:
+            return
+
+        # обновление поведения сущности, если она бот
+        _, *mobs = self.entities
+        for mob in mobs:
+            operation_log = mob.act(self.player, self.fov, self.map, self.entities)
+
+            if not operation_log or not operation_log.log:
+                continue
+
             for item in operation_log.log:
                 message = item.get('message')
-                maybe_dead_entity = item.get('dead')
-                picked_item = item.get('new_item')
-                is_menu_key = item.get('show_menu')
-                is_drop_meny_key = item.get('drop_menu')
-                is_index = item.get('inv_index')
-                is_drop = item.get('drop_item')
-
                 if message:
                     self.info.msg_log.add_message(message)
 
+                maybe_dead_entity = item.get('dead')
                 if maybe_dead_entity:
+                    message = maybe_dead_entity.die()
                     if isinstance(maybe_dead_entity, Player):
-                        message, self.curr_state.value = kill_player(maybe_dead_entity)
                         self.curr_state.value = State.PLAYER_DEAD
-                        self.info.msg_log.add_message(message)
-                    else:
-                        is_aggr, message, state = kill_mob(maybe_dead_entity)
-                        self.info.msg_log.add_message(message)
-                        if is_aggr:
-                            self.info.killed_on_lvl += 1
+                    self.info.msg_log.add_message(message)
 
-                if picked_item:
-                    operation_log.log.extend(self.player.pick_item(picked_item).log)
-                    self.entities.remove(picked_item)
-
-                if is_menu_key:
-                    self.prev_state.value = self.curr_state.value
-                    self.curr_state.value = State.SHOWING_MENU
-
-                if is_drop_meny_key:
-                    self.prev_state.value = self.curr_state.value
-                    self.curr_state.value = State.DROP_ITEM
-
-                if is_index is not None and is_index >= 0 and \
-                        self.prev_state.value != State.PLAYER_DEAD:
-                    if is_index >= len(self.player.inventory.items):
-                        operation_log.add_item({'message': Message('Wrong item index.', tc.yellow)})
-                        continue
-
-                    item = self.player.inventory.items[is_index]
-
-                    if self.curr_state.value == State.SHOWING_MENU:
-                        operation_log.log.extend(self.player.inventory.activate_item(item).log)
-                    elif self.curr_state.value == State.DROP_ITEM:
-                        operation_log.log.extend(self.player.inventory.drop_item(self.entities, item).log)
-
-                if is_drop:
-                    self.prev_state.value = self.curr_state.value
-                    self.curr_state.value = State.DROP_ITEM
-
-                if self.info.killed_on_lvl >= 3:
-                    self.__init__(self.info.scr_wd,
-                                  self.info.scr_ht,
-                                  fov_mode=self.info.FOV_MODE,
-                                  debug=self.info.DEBUG,
-                                  player_lvl=self.info.player_lvl + 1)
-                    continue
-
-    def mob_turn(self):
-        if self.curr_state.value == State.MOB_TURN:
-            # обновление поведения сущности, если она бот
-            for mob in self.entities[1:]:
-                operation_log = mob.act(self.player, self.fov, self.map, self.entities)
-
-                if operation_log and operation_log.log:
-                    for item in operation_log.log:
-                        message = item.get('message')
-                        maybe_dead_entity = item.get('dead')
-                        if message:
-                            self.info.msg_log.add_message(message)
-
-                        if maybe_dead_entity:
-                            if isinstance(maybe_dead_entity, Player):
-                                message, self.curr_state.value = kill_player(maybe_dead_entity)
-                                self.info.msg_log.add_message(message)
-                                self.curr_state.value = State.PLAYER_DEAD
-                            else:
-                                message = kill_mob(maybe_dead_entity)
-                                self.info.msg_log.add_message(message)
-
-            if self.curr_state.value != State.PLAYER_DEAD:
-                self.curr_state.value = State.PLAYER_TURN
+        if self.curr_state.value != State.PLAYER_DEAD:
+            self.curr_state.value = State.PLAYER_TURN
 
     def stop(self):
         self.IS_GAME = False
 
-    def run(self):
+    def game_exit(self):
+        # если игрок не мертв и мы вышли - сохраняем игру
+        if self.curr_state.value != State.PLAYER_DEAD and self.load_type != EngineLoadTypes.TEST:
+            save_game(self)
+        elif self.load_type != EngineLoadTypes.TEST:
+            # удаляем сохранение при смерти
+            if os.path.isfile('media/GAME_SAVE.json'):
+                os.remove('media/GAME_SAVE.json')
+
+    def init_console_font(self):
         # подгрузка шрифта
         tc.console_set_custom_font(self.info.FONT_PATH, tc.FONT_TYPE_GREYSCALE | tc.FONT_LAYOUT_TCOD)
+
+    def run(self):
+        self.init_console_font()
         # инициализация главной консоли
         with tc.console_init_root(self.info.scr_wd,
                                   self.info.scr_ht,
@@ -194,10 +209,4 @@ class Engine:
                 # ход мобов
                 self.mob_turn()
 
-        # если игрок не мертв и мы вышли - сохраняем игру
-        if self.curr_state.value != State.PLAYER_DEAD and self.load_type != EngineLoadTypes.TEST:
-            save_game(self)
-        elif self.load_type != EngineLoadTypes.TEST:
-            # удаляем сохранение при смерти
-            if os.path.isfile('media/GAME_SAVE.json'):
-                os.remove('media/GAME_SAVE.json')
+        self.game_exit()

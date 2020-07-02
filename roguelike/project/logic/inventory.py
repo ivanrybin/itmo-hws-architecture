@@ -79,17 +79,10 @@ class Inventory:
         return data
 
     def add_item(self, item_entity):
-        operation_log = OperationLog()
-
-        if len(self.items) >= self.maxsize:
-            operation_log.add_item({'new_item': None,
-                                    'message': Message('Inventory is full.', tc.yellow)})
-        else:
-            operation_log.add_item({'new_item': item_entity,
-                                    'message': Message(f'New item {item_entity.name}!', tc.light_azure)})
+        if len(self.items) < self.maxsize:
             self.items.append(item_entity)
-
-        return operation_log
+            return True
+        return False
 
     def del_item(self, item_entity):
         self.items.remove(item_entity)

@@ -23,10 +23,10 @@ class EntityType(Enum):
 
 class Entity:
     def __init__(self, x, y, screen_width, screen_height, char, color, name,
-                 stats=None, game_map=None, strategy=PassiveStrategy(),
-                 is_blocking=True, render_order=RenderOrder.ALIVE_ENTITY,
-                 item=None, inventory=None, entity_type=None,
+                 stats=None, game_map=None, is_blocking=True,
+                 render_order=RenderOrder.ALIVE_ENTITY, entity_type=None,
                  move_handler=None):
+        print(x, y)
         self.x = x
         self.y = y
         self.sw = screen_width
@@ -39,49 +39,11 @@ class Entity:
         self.name = name
         self.stats = stats
         self.map = game_map
-        self.strategy = strategy
         self.is_blocking = is_blocking
         self.render_order = render_order
-        self.item = item
-        self.inventory = inventory
         self.type = entity_type
         self.main_color = color
         self.mv_handler = move_handler
-
-        if self.item:
-            self.item.owner = self
-        if self.inventory:
-            self.inventory.owner = self
-
-    def serialize(self):
-        data = {
-            'x': self.x,
-            'y': self.y,
-            'scr_wd': self.sw,
-            "scr_ht": self.sh,
-            'ch': self.char,
-            'clr': self.color,
-            'name': self.name,
-            'strat': self.strategy.__class__.__name__,
-            'is_block': self.is_blocking,
-            'render_ord': self.render_order.value,
-            'main_clr': self.main_color,
-            'stats': None,
-            'item': None,
-            'inventory': None,
-            'type': None
-        }
-
-        if self.stats:
-            data['stats'] = self.stats.serialize()
-        if self.item:
-            data['item'] = self.item.serialize()
-        if self.inventory:
-            data['inventory'] = self.inventory.serialize()
-        if self.type:
-            data['type'] = self.type.value
-
-        return data
 
     def who_blocks(self, mobs, dest_x, dest_y):
         for mob in mobs:

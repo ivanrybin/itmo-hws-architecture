@@ -5,14 +5,21 @@
 import random as rnd
 
 from logic.entity import Entity
+from logic.killer import kill_mob
+from engine.engine_load_types import EngineLoadTypes
+from logic.patterns.strategy import PassiveStrategy
 
 
 class Mob(Entity):
-    def __init__(self, *args, load_type='NORMAL', **kwargs):
+    def __init__(self, item, *args, strategy=PassiveStrategy(),  load_type=EngineLoadTypes.NORMAL, **kwargs):
         super().__init__(*args, **kwargs)
+        self.strategy = strategy
         self.start_pos_cnt_tries = 10
-        if load_type == 'NORMAL':
+        if load_type == EngineLoadTypes.NORMAL:
             self.__init_start_pos()
+        self.item = item
+        if item:
+            self.item.owner = self
 
     def __init_start_pos(self):
         for i in range(0, self.start_pos_cnt_tries):
@@ -26,4 +33,34 @@ class Mob(Entity):
             if not_in_wall_respawn:
                 break
 
+    def serialize(self):
+        data = {
+            'x': self.x,
+            'y': self.y,
+            'scr_wd': self.sw,
+            "scr_ht": self.sh,
+            'ch': self.char,
+            'clr': self.color,
+            'name': self.name,
+            'strat': self.strategy.__class__.__name__,
+            'is_block': self.is_blocking,
+            'render_ord': self.render_order.value,
+            'main_clr': self.main_color,
+            'stats': None,
+            'item': None,
+            'inventory': None,
+            'type': None
+        }
+
+        if self.item:
+            data['item'] = self.item.serialize()
+        if self.stats:
+            data['stats'] = self.stats.serialize()
+        if self.type:
+            data['type'] = self.type.value
+
+        return data
+
+    def die(self):
+        return kill_mob(self)
 

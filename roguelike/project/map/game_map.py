@@ -6,17 +6,18 @@ import random as rnd
 
 from map.cell import Cell
 from map.room import Wall
+from engine.engine_load_types import EngineLoadTypes
 
 
 class Map:
-    def __init__(self, width, height, player_start_x, player_start_y, load_type='NORMAL'):
+    def __init__(self, width, height, player_start_x, player_start_y, load_type=EngineLoadTypes.NORMAL):
         self.wd = width
         self.ht = height
         self.px = player_start_x
         self.py = player_start_y
         self.walls = []
         self.rooms = [Wall(self.px - 5, self.py - 5, 10, 10)]
-        if load_type == 'LOAD':
+        if load_type == EngineLoadTypes.LOAD:
             return
         self.walls_cnt = rnd.randint(5, 10)
         self.cells = self.__init_cells()

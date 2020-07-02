@@ -17,6 +17,7 @@ from logic.patterns.strategy import *
 from map.cell import Cell
 from map.game_map import Map
 from map.room import Wall
+from engine.engine_initializer import EngineLoadTypes
 
 
 class Serializer:
@@ -73,11 +74,14 @@ class Serializer:
 
     @staticmethod
     def deserialize_mob(data, move_handler):
-        mob = Mob(data['x'], data['y'], data['scr_wd'], data['scr_ht'],
+        item = None
+        if data['item']:
+            item = Serializer.deserialize_item(data['item'])
+        mob = Mob(item, data['x'], data['y'], data['scr_wd'], data['scr_ht'],
                   data['ch'], data['clr'], data['name'],
                   is_blocking=bool(data['is_block']),
                   render_order=RenderOrder(int(data['render_ord'])),
-                  load_type='LOAD')
+                  load_type=EngineLoadTypes.LOAD)
 
         mob.main_color = data['main_clr']
         mob.mv_handler = move_handler
@@ -97,12 +101,6 @@ class Serializer:
         if data['stats']:
             mob.stats = Serializer.deserialize_stats(data['stats'])
             mob.stats.owner = mob
-        if data['item']:
-            mob.item = Serializer.deserialize_item(data['item'])
-            mob.item.owner = mob
-        if data['inventory']:
-            mob.inventory = Serializer.deserialize_inventory(data['inventory'])
-            mob.inventory.owner = mob
         if data['type']:
             mob.type = EntityType(int(data['type']))
 
@@ -126,8 +124,7 @@ class Serializer:
     @staticmethod
     def deserialize_map(data):
         game_map = Map(data['width'], data['height'],
-                       data['px'], data['py'],
-                       load_type='LOAD')
+                       data['px'], data['py'], load_type=EngineLoadTypes.LOAD)
 
         game_map.walls_cnt = data['walls_cnt']
         game_map.cells = [[Cell(bool(cell['is_blocked']),
