@@ -90,20 +90,21 @@ class Inventory:
     def activate_item(self, item_entity):
         operation_log = OperationLog()
 
-        if item_entity.type == EntityType.ARMOUR:
-            if self.owner.stats.armour:
-                self.items.append(self.owner.stats.armour)
-                self.owner.stats.max_defense -= self.owner.stats.armour.item.max_defense
-                self.owner.color = self.owner.main_color
-                self.owner.stats.armour = None
+        if item_entity.item is not None:
+            if item_entity.item.type == ItemType.ARMOUR_I:
+                if self.owner.stats.armour:
+                    self.items.append(self.owner.stats.armour)
+                    self.owner.stats.max_defense -= self.owner.stats.armour.item.max_defense
+                    self.owner.color = self.owner.main_color
+                    self.owner.stats.armour = None
 
-            self.owner.stats.armour = item_entity
-            self.owner.main_color = self.owner.color
-            self.owner.color = item_entity.item.color
-            self.owner.stats.max_defense += item_entity.item.max_defense
-            operation_log.add_item({'message': Message('Armour activated.', tc.yellow)})
+                self.owner.stats.armour = item_entity
+                self.owner.main_color = self.owner.color
+                self.owner.color = item_entity.item.color
+                self.owner.stats.max_defense += item_entity.item.max_defense
+                operation_log.add_item({'message': Message('Armour activated.', tc.yellow)})
 
-            self.items.remove(item_entity)
+                self.items.remove(item_entity)
 
         return operation_log
 

@@ -12,7 +12,6 @@ from engine.render import Render, RenderOrder
 from engine.engine_initializer import EngineInitializer, EngineInfo, EngineLoadTypes
 from engine.keys_handler import KeysHandler
 from logic.inventory import *
-from logic.killer import kill_player, kill_mob
 from logic.player import Player
 from logic.states import State, StateHolder
 from logic.patterns.strategy import AggressiveStrategy

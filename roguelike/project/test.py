@@ -94,7 +94,7 @@ class EngineTester:
                    char=203, color=tc.light_blue, name="test item",
                    stats=EntityStats(*(0, 0, 0)), game_map=engine.map,
                    strategy=PassiveStrategy(),
-                   is_blocking=False, entity_type=item_type)
+                   is_blocking=False)
         if item_type == EntityType.ARMOUR:
             item.item = Armour(5, item.color)
             item.char = 203

@@ -48,16 +48,13 @@ class Mob(Entity):
             'main_clr': self.main_color,
             'stats': None,
             'item': None,
-            'inventory': None,
-            'type': None
+            'inventory': None
         }
 
         if self.item:
             data['item'] = self.item.serialize()
         if self.stats:
             data['stats'] = self.stats.serialize()
-        if self.type:
-            data['type'] = self.type.value
 
         return data
 

@@ -72,8 +72,7 @@ class EngineInitializer:
                         screen_width=engine.info.scr_wd,
                         screen_height=engine.info.scr_ht,
                         char=203, color=tc.white, name='Bob',
-                        stats=stats,
-                        entity_type=EntityType.PLAYER)
+                        stats=stats)
 
         player.mv_handler = MoveDeco(MoveHandler(player))
         player.stats.owner = player
@@ -90,8 +89,7 @@ class EngineInitializer:
                   screen_height=engine.info.scr_ht,
                   char=mob_char, color=mob_colr,
                   name=mob_name, stats=EntityStats(*mob_stat),
-                  game_map=engine.map, strategy=mob_strat,
-                  entity_type=EntityType.MOB)
+                  game_map=engine.map, strategy=mob_strat)
 
         mob.stats.owner = mob
         return mob
@@ -106,8 +104,7 @@ class EngineInitializer:
                    char=item_ch, color=item_clr,
                    name=item_name, stats=EntityStats(*item_stat),
                    game_map=engine.map, strategy=item_strat,
-                   is_blocking=False,
-                   entity_type=item_real_t)
+                   is_blocking=False)
 
         if item_type == ItemType.ARMOUR_I:
             item.item = Armour(5, item.color)

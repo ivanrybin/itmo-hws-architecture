@@ -6,7 +6,7 @@ import time
 import tcod as tc
 
 from logic.logger import Message, OperationLog
-from logic.entity import EntityType
+from logic.player import Player
 
 
 class EntityStats:
@@ -81,7 +81,7 @@ class EntityStats:
         damage = self.force
 
         if damage > 0:
-            if target.type not in [EntityType.HEALTH_PTN, EntityType.INTOX_PTN]:
+            if isinstance(target, Player) or target.item is None:
                 operation_log.add_item({'message': Message(f'{self.owner.name} damaged {target.name} in {damage} hps.',
                                                            tc.white)})
                 operation_log.log.extend(target.stats.decrease_hp(damage).log)

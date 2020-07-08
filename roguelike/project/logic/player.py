@@ -4,10 +4,12 @@
 import time
 import tcod as tc
 
-from logic.entity import Entity, EntityType
+from logic.entity import Entity
+from logic.inventory import ItemType
 from logic.logger import Message
 from logic.logger import OperationLog
 from logic.killer import kill_player
+from logic.mob import Mob
 
 
 class Player(Entity):
@@ -19,12 +21,12 @@ class Player(Entity):
     def pick_item(self, item):
         operation_log = OperationLog()
 
-        if item.type == EntityType.HEALTH_PTN:
+        if item.item.type == ItemType.HP_PTN:
             operation_log.add_item({'message': Message(f'+{item.item.hp_up} HP potion!', tc.green)})
             self.stats.increase_hp(5)
             self.inventory.del_item(item)
 
-        elif item.type == EntityType.INTOX_PTN:
+        elif item.item.type == ItemType.INTOX_PTN:
             operation_log.add_item({'message': Message('You\'re intoxicated!', tc.fuchsia)})
             if self.mv_handler.intox_start_time:
                 self.mv_handler.intox_start_time += item.item.intox_time
@@ -39,16 +41,16 @@ class Player(Entity):
         operation_log = OperationLog()
 
         for entity in entities:
-            if entity.x == self.x and entity.y == self.y and \
-                    entity.type in [EntityType.HEALTH_PTN, EntityType.INTOX_PTN, EntityType.ARMOUR]:
-                operation_log = OperationLog()
-                if not self.inventory.add_item(entity):
-                    operation_log.add_item({'new_item': None,
-                                            'message': Message('Inventory is full.', tc.yellow)})
-                else:
-                    operation_log.add_item({'new_item': entity,
-                                            'message': Message(f'New item {entity.name}!', tc.light_azure)})
-                break
+            if entity.x == self.x and entity.y == self.y:
+                if isinstance(entity, Mob) and entity.item is not None:
+                    operation_log = OperationLog()
+                    if not self.inventory.add_item(entity):
+                        operation_log.add_item({'new_item': None,
+                                                'message': Message('Inventory is full.', tc.yellow)})
+                    else:
+                        operation_log.add_item({'new_item': entity,
+                                                'message': Message(f'New item {entity.name}!', tc.light_azure)})
+                    break
 
         return operation_log
 
@@ -67,13 +69,10 @@ class Player(Entity):
             'stats': None,
             'item': None,
             'inventory': self.inventory.serialize(),
-            'type': None
         }
 
         if self.stats:
             data['stats'] = self.stats.serialize()
-        if self.type:
-            data['type'] = self.type.value
 
         return data
 

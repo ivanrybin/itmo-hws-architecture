@@ -101,8 +101,7 @@ class Serializer:
         if data['stats']:
             mob.stats = Serializer.deserialize_stats(data['stats'])
             mob.stats.owner = mob
-        if data['type']:
-            mob.type = EntityType(int(data['type']))
+
 
         return mob
 

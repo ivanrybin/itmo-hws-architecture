@@ -6,7 +6,7 @@ import tcod as tc
 
 from logic.states import State
 from logic.logger import Message
-from logic.entity import EntityType
+from logic.inventory import ItemType
 from logic.logger import OperationLog
 from engine.render import RenderOrder
 
@@ -28,13 +28,14 @@ def kill_mob(mob):
     mob.name = 'died ' + mob.name
     mob.render_order = RenderOrder.DEAD_ENTITY
 
-    if mob.type == EntityType.HEALTH_PTN:
-        mob.char = ord(' ')
-        return Message('', tc.fuchsia), State.HEALTH_UP
+    if mob.item is not None:
+        if mob.item.type == ItemType.HP_PTN:
+            mob.char = ord(' ')
+            return Message('', tc.fuchsia), State.HEALTH_UP
 
-    if name == EntityType.INTOX_PTN:
-        mob.char = ord(' ')
-        return Message('', tc.fuchsia), State.INTOXICATE
+        if mob.item.type == ItemType.INTOX_PTN:
+            mob.char = ord(' ')
+            return Message('', tc.fuchsia), State.INTOXICATE
 
     if name == 'Aggr':
         return Message(f'{name} is dead!', tc.yellow)

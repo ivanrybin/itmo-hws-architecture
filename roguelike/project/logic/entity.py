@@ -24,7 +24,7 @@ class EntityType(Enum):
 class Entity:
     def __init__(self, x, y, screen_width, screen_height, char, color, name,
                  stats=None, game_map=None, is_blocking=True,
-                 render_order=RenderOrder.ALIVE_ENTITY, entity_type=None,
+                 render_order=RenderOrder.ALIVE_ENTITY,
                  move_handler=None):
         print(x, y)
         self.x = x
@@ -41,7 +41,6 @@ class Entity:
         self.map = game_map
         self.is_blocking = is_blocking
         self.render_order = render_order
-        self.type = entity_type
         self.main_color = color
         self.mv_handler = move_handler
 
