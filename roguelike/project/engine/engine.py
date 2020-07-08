@@ -50,19 +50,21 @@ class Engine:
         # инициализация среды
         self.map = EngineInitializer.init_map(self, load_type)
         self.player = EngineInitializer.init_player(self, load_type)
-        self.entities = [self.player, *EngineInitializer.init_entities(self, load_type)]
+        self.mobs = EngineInitializer.init_entities(self, load_type)
         self.fov = None
         if fov_mode:
             self.fov = EngineInitializer.init_fov(self)
         if load_type == EngineLoadTypes.TEST:
             self.tester = tester
 
+    def get_entities(self):
+        return [self.player] + self.mobs
+
     def serialize(self):
-        _, *mobs = self.entities
         data = {
             "info": self.info.serialize(),
             "player": self.player.serialize(),
-            "entities": [m.serialize() for m in mobs],
+            "entities": [m.serialize() for m in self.mobs],
             "map": self.map.serialize()
         }
         return data
@@ -109,7 +111,7 @@ class Engine:
 
             if picked_item:
                 operation_log.log.extend(self.player.pick_item(picked_item).log)
-                self.entities.remove(picked_item)
+                self.mobs.remove(picked_item)
 
             if is_menu_key:
                 self.prev_state.value = self.curr_state.value
@@ -129,7 +131,7 @@ class Engine:
                     operation_log.log.extend(self.player.inventory.activate_item(item).log)
                 elif self.curr_state.value == State.DROP_ITEM:
                     operation_log.log.extend(
-                        self.player.inventory.drop_item(self.entities, item).log)
+                        self.player.inventory.drop_item(self.get_entities(), item).log)
 
             if is_drop:
                 self.prev_state.value = self.curr_state.value
@@ -143,19 +145,13 @@ class Engine:
                               player_lvl=self.info.player_lvl + 1)
                 continue
 
-
-
     def mob_turn(self):
         if self.curr_state.value != State.MOB_TURN:
             return
 
         # обновление поведения сущности, если она бот
-        _, *mobs = self.entities
-        for mob in mobs:
-            operation_log = mob.act(self.player, self.fov, self.map, self.entities)
-
-            if not operation_log or not operation_log.log:
-                continue
+        for mob in self.mobs:
+            operation_log = mob.act(self.player, self.fov, self.map, self.get_entities())
 
             for item in operation_log.log:
                 message = item.get('message')
@@ -200,13 +196,13 @@ class Engine:
                     Render.recompute_fov(self, self.player.x, self.player.y, self.info.fov_radius)
                 # отрисовка сущностей
                 Render.render_all(root_console, self.info.BARS_CONS, self.player,
-                                  self.map, self.entities,
+                                  self.map, self.get_entities(),
                                   self.info.scr_wd, self.info.scr_ht, colors,
                                   self.info.FOV_MODE, self.fov, self.info.msg_log, self.curr_state)
                 # вывод консоли
                 tc.console_flush()
                 # удаление предыдущих позиций
-                Render.clear_all(root_console, self.entities)
+                Render.clear_all(root_console, self.get_entities())
                 # ход игрока
                 self.player_turn()
                 # ход мобов

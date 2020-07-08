@@ -59,7 +59,7 @@ class KeysHandler:
                     if event.sym == tc.event.K_RIGHT:
                         return KeysHandler.create_command(engine, MoveType.RIGHT)
                     if event.sym == tc.event.K_g:
-                        return Command(engine.player.get_item, engine.entities)
+                        return Command(engine.player.get_item, engine.get_entities())
                     if event.sym == tc.event.K_i:
                         # выход из меню инвентаря
                         if engine.curr_state.value == State.SHOWING_MENU:
@@ -80,4 +80,4 @@ class KeysHandler:
     @staticmethod
     def create_command(engine, move_type):
         return Command(engine.player.mv_handler.move, move_type,
-                       engine.map, engine.entities, engine.curr_state)
+                       engine.map, engine.get_entities(), engine.curr_state)

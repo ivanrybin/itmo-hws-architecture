@@ -7,7 +7,7 @@ import tcod as tc
 from logic.states import State
 from logic.logger import Message
 from logic.entity import EntityType
-
+from logic.logger import OperationLog
 from engine.render import RenderOrder
 
 
@@ -24,7 +24,7 @@ def kill_mob(mob):
     mob.color = tc.dark_grey
     mob.is_blocking = False
     mob.stats = None
-    mob.act = lambda *args, **kwargs: None
+    mob.act = lambda *args, **kwargs: OperationLog()
     mob.name = 'died ' + mob.name
     mob.render_order = RenderOrder.DEAD_ENTITY
 

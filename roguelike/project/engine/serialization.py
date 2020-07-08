@@ -183,7 +183,7 @@ class Serializer:
 
         engine.map = Serializer.deserialize_map(data['map'])
         engine.player = Serializer.deserialize_player(data['player'], engine)
-        engine.entities = [engine.player, *Serializer.deserialize_entities(data['entities'])]
+        engine.mobs = Serializer.deserialize_entities(data['entities'])
 
         if engine.info.FOV_MODE:
             engine.fov = EngineInitializer.init_fov(engine)
@@ -208,6 +208,6 @@ class Serializer:
                 engine.map.cells[y][x].block()
 
             engine.player = EngineInitializer.init_player(engine, engine.load_type)
-            engine.entities = [engine.player, *EngineInitializer.init_entities(engine, engine.load_type)]
+            engine.mobs = EngineInitializer.init_entities(engine, engine.load_type)
 
         return engine

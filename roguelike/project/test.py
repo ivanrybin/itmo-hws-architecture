@@ -60,7 +60,7 @@ class EngineTester:
 
     @staticmethod
     def __move_player(engine, mv_type=None):
-        return Command(engine.player.mv_handler.move, mv_type, engine.map, engine.entities, engine.curr_state)
+        return Command(engine.player.mv_handler.move, mv_type, engine.map, engine.get_entities(), engine.curr_state)
 
     @staticmethod
     def __move_test_moves(mv_types):
@@ -105,14 +105,14 @@ class EngineTester:
             item.color = tc.light_violet
         item.stats.owner = item
 
-        engine.entities.append(item)
+        engine.mobs.append(item)
 
         return Command(lambda arg: arg,
                        OperationLog([{'message': Message('Created item for pick.', tc.yellow)}]))
 
     @staticmethod
     def __pick_item(_, engine):
-        return Command(engine.player.get_item, engine.entities)
+        return Command(engine.player.get_item, engine.get_entities())
 
     @staticmethod
     def __open_drop_inventory(_, engine):
