@@ -1,0 +1,22 @@
+
+language: cpp
+
+dist: bionic
+
+compiler: gcc
+
+os:
+  -linux
+
+script: 
+  - g++ terminal/src/test.cpp
+    terminal/src/terminal.cpp
+    terminal/src/cli/commands.cpp
+    terminal/src/cli/commands/command.cpp
+    terminal/src/cli/commands/wc_cmd.cpp
+    terminal/src/cli/commands/cat_cmd.cpp
+    terminal/src/cli/commands/exit_cmd.cpp
+    terminal/src/cli/commands/pwd_cmd.cpp
+    terminal/src/cli/commands/echo_cmd.cpp
+    -lstdc++fs -o terminal_test
+  - ./terminal_test
