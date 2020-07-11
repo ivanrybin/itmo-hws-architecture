@@ -22,6 +22,7 @@
 #include "commands/pwd_cmd.hpp"
 #include "commands/exit_cmd.hpp"
 #include "commands/wc_cmd.hpp"
+#include "commands/grep_cmd.hpp"
 
 /*
  * commands - класс агрегатор команд, поддерживаемых CLI.

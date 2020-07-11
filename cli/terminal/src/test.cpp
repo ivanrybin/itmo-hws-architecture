@@ -15,6 +15,7 @@
 #define CAT_CMD
 #define PWD_CMD
 #define WC_CMD
+#define GREP_CMD
 #define PIPE
 
 namespace fs = std::experimental::filesystem;
@@ -224,6 +225,85 @@ static void wc_cmd_test() {
 #endif
 }
 
+static void grep_cmd_test() {
+#ifdef GREP_CMD
+    std::string l;
+    std::stringstream sin{};
+    std::stringstream sout{};
+    std::stringstream serr{};
+    terminal test_t(sin, sout, serr, true);
+
+    // basics [-w] [-A n] [-i]
+    {
+        std::ofstream file("grep_test.txt", std::ofstream::out | std::ofstream::trunc);
+        file << "grep\n"
+                "Line №2 GREPTEST\n"
+                "Line №3 abcdefgh\n"
+                "Line №4 ABC word\n"
+                "end of file\n";
+        file.close();
+
+        sin << "grep grep grep_test.txt" << "\n";       // just pattern
+        test_t.run();
+
+        gl(sout, l); assert("grep" == l);
+        clear_streams(sin, sout, serr);
+
+
+        sin << "grep -i grep grep_test.txt" << "\n";    // [-i] non case sensitive
+        test_t.run();
+
+        assert("grep\n"
+               "Line №2 GREPTEST\n" == sout.str());
+        clear_streams(sin, sout, serr);
+
+
+        sin << "grep -wi abc grep_test.txt" << "\n";    // [-w] only words
+        test_t.run();
+
+        assert("Line №4 ABC word\n" == sout.str());
+        clear_streams(sin, sout, serr);
+
+
+        sin << "grep -wA2 grep grep_test.txt" << "\n";  // [-A n] n lines after matching
+        test_t.run();
+
+        assert("grep\n"
+               "Line №2 GREPTEST\n"
+               "Line №3 abcdefgh\n" == sout.str());
+        clear_streams(sin, sout, serr);
+
+
+        sin << "grep -w grep grep_test.txt grep_test.txt grep_test.txt" << "\n"; // many files
+        test_t.run();
+
+        assert("grep_test.txt:grep\n"
+               "grep_test.txt:grep\n"
+               "grep_test.txt:grep\n" == sout.str());
+        clear_streams(sin, sout, serr);
+
+        std::remove("grep_test.txt");
+    }
+    // errors
+    {
+        sin << "grep pattern abc.xyz" << "\n";
+        test_t.run();
+        assert("grep: abc.xyz: Нет такого файла или каталога\n" == serr.str());
+        clear_streams(sin, sout, serr);
+
+        sin << "grep -A pattern abc.xyz" << "\n";
+        test_t.run();
+        assert("grep: bad_context: Неверный аргумент длины контекста\n" == serr.str());
+        clear_streams(sin, sout, serr);
+
+        sin << "grep -x pattern abc.xyz" << "\n";
+        test_t.run();
+        assert("grep: -x: Неверный ключ\n" == serr.str());
+        clear_streams(sin, sout, serr);
+    }
+#endif
+}
+
 static void pipe_test() {
 #ifdef PIPE
     std::string l;
@@ -255,6 +335,7 @@ int main() {
         cat_cmd_test();
         pwd_cmd_test();
         wc_cmd_test();
+        grep_cmd_test();
         pipe_test();
     } catch (std::exception& e) {
         is_exc = true;
@@ -262,7 +343,7 @@ int main() {
         std::cout << e.what() << std::endl;
     }
     if (!is_exc) {
-        std::cout << "5/5 Tests passed!" << std::endl;
+        std::cout << "6/6 Tests passed!" << std::endl;
     }
     return 0;
 }

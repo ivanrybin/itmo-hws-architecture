@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(.)
 
+find_package(Boost 1.73.0 COMPONENTS program_options REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
 # run mode
 add_executable(terminal
                 src/main.cpp
@@ -17,12 +20,14 @@ add_executable(terminal
                 src/cli/commands/exit_cmd.cpp
                 src/cli/commands/pwd_cmd.cpp
                 src/cli/commands/echo_cmd.cpp
-                )
+                src/cli/commands/grep_cmd.cpp
+               )
 
-target_link_libraries(terminal stdc++fs)
+target_link_libraries(terminal stdc++fs ${Boost_LIBRARIES})
 
 # test mode
-add_executable(test src/test.cpp
+add_executable(test 
+                src/test.cpp
                 src/terminal.cpp
                 src/cli/commands.cpp
                 src/cli/commands/command.cpp
@@ -31,6 +36,7 @@ add_executable(test src/test.cpp
                 src/cli/commands/exit_cmd.cpp
                 src/cli/commands/pwd_cmd.cpp
                 src/cli/commands/echo_cmd.cpp
+                src/cli/commands/grep_cmd.cpp
                 )
 
-target_link_libraries(test stdc++fs)
+target_link_libraries(test stdc++fs ${Boost_LIBRARIES})
